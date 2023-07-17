@@ -30,6 +30,17 @@ function createAndDownloadCsvFile(csvString, filename) {
 }
 
 
+function createAndDownloadTxtFile(csvString, filename) {
+	let dataStr = "data:text/csv;charset=utf-8," + encodeURI(csvString);
+	let downloadAnchorNode = document.createElement('a');
+	downloadAnchorNode.setAttribute("href", dataStr);
+	downloadAnchorNode.setAttribute("download", filename + ".txt");
+	document.body.appendChild(downloadAnchorNode); // required for firefox
+	downloadAnchorNode.click();
+	downloadAnchorNode.remove();
+}
+
+
 function updateExampleGeneIDs(event) {
 	var dataset = event.target.value;
 
@@ -143,4 +154,30 @@ function queryAccessionInformation() {
 	} else {
 		alert("Accession information of the " + dataset + " dataset is not available!!!");
 	}
+}
+
+
+function downloadExampleData() {
+	$.ajax({
+		url: './php/queryExampleData.php',
+		type: 'GET',
+		contentType: 'application/json',
+		data: {},
+		success: function (response) {
+			res = JSON.parse(response);
+			res = res.data;
+
+			if (res.length > 0) {
+				createAndDownloadTxtFile(res.join(''), "Hilum_col_BlXBr_Soy1066_pheno_template");
+
+			} else {
+				alert("Example data is not available!!!");
+			}
+
+		},
+		error: function (xhr, status, error) {
+			console.log('Error with code ' + xhr.status + ': ' + xhr.statusText);
+			alert("Example data is not available!!!");
+		}
+	});
 }

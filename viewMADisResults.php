@@ -34,11 +34,18 @@ include './php/pdoResultFilter.php';
 <?php
 $dataset = $_POST['dataset_1'];
 $gene = $_POST['gene_1'];
+$max_combination = intval($_POST['max_combination_1']);
 $file_name = $_FILES['file_1']['name'];
 $file_type = $_FILES['file_1']['type'];
 $file_tmp_name = $_FILES['file_1']['tmp_name'];
 $file_error = $_FILES['file_1']['error'];
 $file_size = $_FILES['file_1']['size'];
+
+if ($max_combination > 7) {
+	$max_combination = 7;
+} elseif ($max_combination < 2) {
+	$max_combination = 2;
+}
 
 if (is_string($gene)) {
 	$gene_array = preg_split("/[;, \n]+/", $gene);
@@ -102,10 +109,11 @@ echo "<br/><br/>";
 
 	var dataset = <?php if(isset($dataset)) {echo json_encode($dataset, JSON_INVALID_UTF8_IGNORE);} else {echo "";}?>;
 	var gene_array = <?php if(isset($gene_array)) {echo json_encode($gene_array, JSON_INVALID_UTF8_IGNORE);} else {echo "";}?>;
+	var max_combination = <?php if(isset($max_combination)) {echo json_encode($max_combination, JSON_INVALID_UTF8_IGNORE);} else {echo "";}?>;
 	var phenotype_array = <?php if(isset($phenotype_array)) {echo json_encode($phenotype_array, JSON_INVALID_UTF8_IGNORE);} else {echo "";}?>;
 
 	var phenotype_dict = processPhenotypeArray(phenotype_array);
-	updateAllMADisResults(dataset, gene_array, phenotype_dict);
+	updateAllMADisResults(dataset, gene_array, phenotype_dict, max_combination);
 </script>
 
 <?php include '../footer.php'; ?>

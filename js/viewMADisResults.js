@@ -122,25 +122,25 @@ function deduplicatePhenotypeDictAndGenotypeDict(phenotype_dict, genotype_dict) 
 }
 
 
-function generateCombinations(arr) {
+function generateCombinations(arr, max_combination) {
 	const combinations = [];
 
 	// Recursive function to generate combinations
 	function generate(currentCombo, remainingElements, size) {
 		if (size === 0) {
-		combinations.push(currentCombo);
-		return;
+			combinations.push(currentCombo);
+			return;
 		}
 
 		for (let i = 0; i < remainingElements.length; i++) {
-		const newCombo = currentCombo.concat(remainingElements[i]);
-		const newRemaining = remainingElements.slice(i + 1);
-		generate(newCombo, newRemaining, size - 1);
+			const newCombo = currentCombo.concat(remainingElements[i]);
+			const newRemaining = remainingElements.slice(i + 1);
+			generate(newCombo, newRemaining, size - 1);
 		}
 	}
 
 	// Generate combinations of different sizes
-	for (let size = 2; size <= 7; size++) {
+	for (let size = 2; size <= max_combination; size++) {
 		generate([], arr, size);
 	}
 
@@ -148,7 +148,7 @@ function generateCombinations(arr) {
 }
 
 
-function runMADisAlgorithm(phenotype_dict, genotype_dict) {
+function runMADisAlgorithm(phenotype_dict, genotype_dict, max_combination) {
 	var d_score ={
 		"10":-1,
 		"01":-1,
@@ -200,11 +200,11 @@ function runMADisAlgorithm(phenotype_dict, genotype_dict) {
 	}
 
 	// Generate all the combinations of positions
-	var combs = generateCombinations(position_array);
+	var combs = generateCombinations(position_array, max_combination);
 	combs.sort((a, b) => (a.length < b.length) ? 1 : -1);
-	// Currently, we are limiting the number of combinations to 500
-	if (combs.length > 500) {
-		combs = combs.slice(0, 500);
+	// Currently, we are limiting the number of combinations to 2000
+	if (combs.length > 2000) {
+		combs = combs.slice(0, 2000);
 	}
 
 	var res_dict_array = [];
@@ -301,7 +301,7 @@ function constructTable(jsonObject) {
 }
 
 
-function downloadMADisResults(dataset, gene, phenotype_dict){
+function downloadMADisResults(dataset, gene, phenotype_dict, max_combination) {
 	var phenotype_accession_array = Object.keys(phenotype_dict);
 
 	$.ajax({
@@ -358,7 +358,7 @@ function downloadMADisResults(dataset, gene, phenotype_dict){
 			genotype_dict = pheno_geno_dict['Genotype'];
 
 			// Perform MADis algorithm here
-			var madis_result = runMADisAlgorithm(phenotype_dict, genotype_dict);
+			var madis_result = runMADisAlgorithm(phenotype_dict, genotype_dict, max_combination);
 
 			// Display MADis results
 			if (madis_result.length > 0) {
@@ -376,7 +376,7 @@ function downloadMADisResults(dataset, gene, phenotype_dict){
 }
 
 
-function updateMADisResults(dataset, gene, phenotype_dict){
+function updateMADisResults(dataset, gene, phenotype_dict, max_combination) {
 	var phenotype_accession_array = Object.keys(phenotype_dict);
 
 	$.ajax({
@@ -445,7 +445,7 @@ function updateMADisResults(dataset, gene, phenotype_dict){
 			genotype_dict = pheno_geno_dict['Genotype'];
 
 			// Perform MADis algorithm here
-			var madis_result = runMADisAlgorithm(phenotype_dict, genotype_dict);
+			var madis_result = runMADisAlgorithm(phenotype_dict, genotype_dict, max_combination);
 
 			// Display MADis results
 			if (madis_result.length > 0) {
@@ -476,8 +476,8 @@ function updateMADisResults(dataset, gene, phenotype_dict){
 }
 
 
-function updateAllMADisResults(dataset, gene_array, phenotype_dict){
+function updateAllMADisResults(dataset, gene_array, phenotype_dict, max_combination) {
 	for (let i = 0; i < gene_array.length; i++) {
-		updateMADisResults(dataset, gene_array[i], phenotype_dict)
+		updateMADisResults(dataset, gene_array[i], phenotype_dict, max_combination)
 	}
 }

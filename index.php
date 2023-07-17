@@ -27,8 +27,16 @@ include '../header.php';
 					<br />
 					<br />
 					<label><b>Phenotype Data Upload:</b></label>
-					<span id="phenotype_data_hint_1" style="font-size:9pt">&nbsp;(tab delimited txt or comma separated csv only)</span><br />
+					<span id="phenotype_data_hint_1" style="font-size:9pt">&nbsp;(tab delimited txt or comma separated csv only)</span>
+					<button type="button" onclick="downloadExampleData()">Example Data</button>
+					<br />
 					<input type="file" id="file_1" name="file_1" accept="text/csv, text/plain">
+					<br />
+					<br />
+					<label><b>Maximum combination:</b></label>
+					<span id="max_combination_hint_1" style="font-size:9pt">&nbsp;(accept any number between 2 and 7 inclusive; default: 2)</span>
+					<br />
+					<input type="number" id="max_combination_1" name="max_combination_1">
 					<br />
 					<br />
 					<input style="float: right; clear: both;" type="submit" value="Search">
