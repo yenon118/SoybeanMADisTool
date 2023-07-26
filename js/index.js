@@ -9,7 +9,7 @@ function convertJsonToCsv(jsonObject) {
 		let tr_keys = Object.keys(jsonObject[i]);
 		for (let j = 0; j < tr_keys.length; j++) {
 			csvString += ((jsonObject[i][tr_keys[j]] === null) || (jsonObject[i][tr_keys[j]] === undefined)) ? '\"\"' : "\"" + jsonObject[i][tr_keys[j]] + "\"";
-			if (j < (tr_keys.length-1)) {
+			if (j < (tr_keys.length - 1)) {
 				csvString += ',';
 			}
 		}

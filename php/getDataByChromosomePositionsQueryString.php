@@ -4,7 +4,7 @@ function getDataByChromosomePositionsQueryString($dataset, $gene, $chromosome, $
 
 	// Generate SQL string
 	$query_str = "SELECT ACD.Classification, ACD.Improvement_Status, ";
-    $query_str = $query_str . "ACD.Maturity_Group, ACD.Country, ACD.State, ";
+	$query_str = $query_str . "ACD.Maturity_Group, ACD.Country, ACD.State, ";
 	$query_str = $query_str . "ACD.Accession, ACD.SoyKB_Accession, ACD.GRIN_Accession, ";
 	$query_str = $query_str . "ACD.Gene, ACD.Chromosome, ACD.Position, ACD.Genotype, ACD.Genotype_Description, ACD.Imputation ";
 	$query_str = $query_str . "FROM ( ";
@@ -21,15 +21,22 @@ function getDataByChromosomePositionsQueryString($dataset, $gene, $chromosome, $
 	$query_str = $query_str . "		FROM " . $db . "." . $gff_table . " AS GFF ";
 	$query_str = $query_str . "		INNER JOIN " . $db . ".mad_" . $dataset . "_func_eff_" . $chromosome . " AS FUNC ";
 	$query_str = $query_str . "		ON (FUNC.Chromosome = GFF.Chromosome) AND (FUNC.Position >= GFF.Start) AND (FUNC.Position <= GFF.End) ";
-	$query_str = $query_str . "		WHERE (GFF.ID=\"" . $gene . "\") AND (GFF.Feature=\"gene\") AND (FUNC.Gene_Name LIKE '%" . $gene . "%') AND (FUNC.Chromosome=\"" . $chromosome . "\") AND (FUNC.Position IN ('";
-	for ($i = 0; $i < count($position_array); $i++) {
-		if($i < (count($position_array)-1)){
-			$query_str = $query_str . trim($position_array[$i]) . "', '";
-		} elseif ($i == (count($position_array)-1)) {
-			$query_str = $query_str . trim($position_array[$i]);
+	$query_str = $query_str . "		WHERE (GFF.ID=\"" . $gene . "\") AND (GFF.Feature=\"gene\") AND (FUNC.Gene_Name LIKE '%" . $gene . "%') AND (FUNC.Chromosome=\"" . $chromosome . "\") ";
+
+	if (($position_array != "") && (is_array($position_array))) {
+		if (count($position_array) > 0) {
+			$query_str = $query_str . "AND (FUNC.Position IN ('";
+			for ($i = 0; $i < count($position_array); $i++) {
+				if($i < (count($position_array)-1)){
+					$query_str = $query_str . trim($position_array[$i]) . "', '";
+				} elseif ($i == (count($position_array)-1)) {
+					$query_str = $query_str . trim($position_array[$i]);
+				}
+			}
+			$query_str = $query_str . "')) ";
 		}
 	}
-	$query_str = $query_str . "')) ";
+
 	$query_str = $query_str . "	) AS COMB1 ";
 	$query_str = $query_str . "	INNER JOIN " . $db . ".mad_" . $dataset . "_genotype_" . $chromosome . " AS GENO ";
 	$query_str = $query_str . "	ON (GENO.Chromosome = COMB1.Chromosome) AND (GENO.Position = COMB1.Position) ";
