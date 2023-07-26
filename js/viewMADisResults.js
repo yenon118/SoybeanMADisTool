@@ -61,67 +61,6 @@ function processPhenotypeArray(phenotype_array){
 }
 
 
-function deduplicatePhenotypeDictAndGenotypeDict(phenotype_dict, genotype_dict) {
-	var phenotype_accession_array = Object.keys(phenotype_dict);
-	var genotype_accession_array = Object.keys(genotype_dict);
-
-	// Intersect the phenotype dict and the genotype dict
-	var genotype_accession_need_discard = [];
-	for (let i = 0; i < genotype_accession_array.length; i++) {
-		if (!(phenotype_accession_array.includes(genotype_accession_array[i]))) {
-			genotype_accession_need_discard.push(genotype_accession_array[i]);
-		}
-	}
-	if (genotype_accession_need_discard.length > 0) {
-		for (let i = 0; i < genotype_accession_need_discard.length; i++) {
-			delete genotype_dict[genotype_accession_need_discard[i]];
-		}
-	}
-	genotype_accession_array = Object.keys(genotype_dict);
-
-	var phenotype_accession_need_discard = [];
-	for (let i = 0; i < phenotype_accession_array.length; i++) {
-		if (!(genotype_accession_array.includes(phenotype_accession_array[i]))) {
-			phenotype_accession_need_discard.push(phenotype_accession_array[i]);
-		}
-	}
-	if (phenotype_accession_need_discard.length > 0) {
-		for (let i = 0; i < phenotype_accession_need_discard.length; i++) {
-			delete phenotype_dict[phenotype_accession_need_discard[i]];
-		}
-	}
-	phenotype_accession_array = Object.keys(phenotype_dict);
-
-	var genotype_accession_need_discard = [];
-	for (let i = 0; i < genotype_accession_array.length; i++) {
-		if (!(phenotype_accession_array.includes(genotype_accession_array[i]))) {
-			genotype_accession_need_discard.push(genotype_accession_array[i]);
-		}
-	}
-	if (genotype_accession_need_discard.length > 0) {
-		for (let i = 0; i < genotype_accession_need_discard.length; i++) {
-			delete genotype_dict[genotype_accession_need_discard[i]];
-		}
-	}
-	genotype_accession_array = Object.keys(genotype_dict);
-
-	var phenotype_accession_need_discard = [];
-	for (let i = 0; i < phenotype_accession_array.length; i++) {
-		if (!(genotype_accession_array.includes(phenotype_accession_array[i]))) {
-			phenotype_accession_need_discard.push(phenotype_accession_array[i]);
-		}
-	}
-	if (phenotype_accession_need_discard.length > 0) {
-		for (let i = 0; i < phenotype_accession_need_discard.length; i++) {
-			delete phenotype_dict[phenotype_accession_need_discard[i]];
-		}
-	}
-	phenotype_accession_array = Object.keys(phenotype_dict);
-
-	return({"Phenotype": phenotype_dict, "Genotype": genotype_dict});
-}
-
-
 function generateCombinations(arr, max_combination) {
 	const combinations = [];
 
@@ -188,10 +127,14 @@ function runMADisAlgorithm(phenotype_dict, genotype_dict, max_combination) {
 		}
 	}
 
-	// Collect all the positions from the genotype dictionary
+	// Collect all the unique chromosomes and positions from the genotype dictionary
+	var chromosome_array = [];
 	var position_array = [];
 	for (let i = 0; i < genotype_accession_array.length; i++) {
-		var temp_position_array = Object.keys(genotype_dict[genotype_accession_array[i]]);
+		if (!(chromosome_array.includes(genotype_dict[genotype_accession_array[i]]['Chromosome']))) {
+			chromosome_array.push(genotype_dict[genotype_accession_array[i]]['Chromosome']);
+		}
+		var temp_position_array = Object.keys(genotype_dict[genotype_accession_array[i]]["Position_Category_Index"]);
 		for (let j = 0; j < temp_position_array.length; j++) {
 			if (!(position_array.includes(temp_position_array[j]))) {
 				position_array.push(temp_position_array[j]);
@@ -202,15 +145,16 @@ function runMADisAlgorithm(phenotype_dict, genotype_dict, max_combination) {
 	// Generate all the combinations of positions
 	var combs = generateCombinations(position_array, max_combination);
 	combs.sort((a, b) => (a.length < b.length) ? 1 : -1);
-	// Currently, we are limiting the number of combinations to 2000
-	if (combs.length > 2000) {
-		combs = combs.slice(0, 2000);
+	// Currently, we are limiting the number of combinations to 5000
+	if (combs.length > 5000) {
+		combs = combs.slice(0, 5000);
 	}
 
 	var res_dict_array = [];
 	for (let i = 0; i < combs.length; i++) {
 		// Generate a result dictionary for each combination
 		var res_dict = {
+			'Chromosome': chromosome_array.join(';'),
 			'Position_combination': combs[i].join(';'),
 			'N_position_combination': combs[i].length,
 			'Score': 0,
@@ -233,12 +177,12 @@ function runMADisAlgorithm(phenotype_dict, genotype_dict, max_combination) {
 			for (let k = 0; k < combs[i].length; k++) {
 				var position = combs[i][k];
 				try {
-					if (genotype_dict[accession][position] == 1) {
+					if (genotype_dict[accession]["Position_Category_Index"][position] == 1) {
 						geno_sum[accession] = geno_sum[accession] + 1;
 					}
-				  } catch (error) {
-					console.error(error);
-				  }
+				} catch (error) {
+					console.log(error);
+				}
 			}
 
 			// Get the remainder of the sum (no mutation will be 0 as total combination is less than 10)
@@ -257,7 +201,7 @@ function runMADisAlgorithm(phenotype_dict, genotype_dict, max_combination) {
 			}
 		}
 
-		res_dict['Percentage_explain_phenotype'] = 100 * (res_dict['N_MUT_corr_pred'] + res_dict['N_WT_corr_pred']) / res_dict['N'];
+		res_dict['Percentage_explain_phenotype'] = parseFloat(100 * (res_dict['N_MUT_corr_pred'] + res_dict['N_WT_corr_pred']) / res_dict['N']).toFixed(2);
 
 		res_dict_array.push(res_dict);
 	}
@@ -268,7 +212,7 @@ function runMADisAlgorithm(phenotype_dict, genotype_dict, max_combination) {
 }
 
 
-function constructTable(jsonObject) {
+function constructTable(dataset, gene, jsonObject) {
 
 	// Create table
 	let detail_table = document.createElement("table");
@@ -289,10 +233,22 @@ function constructTable(jsonObject) {
 		var detail_content_tr = document.createElement("tr");
 		detail_content_tr.style.backgroundColor = ((i%2) ? "#FFFFFF" : "#DDFFDD");
 		for (let j = 0; j < header_array.length; j++) {
-			var detail_td = document.createElement("td");
-			detail_td.setAttribute("style", "border:1px solid black; min-width:80px; height:18.5px;");
-			detail_td.innerHTML = jsonObject[i][header_array[j]];
-			detail_content_tr.appendChild(detail_td);
+			if (header_array[j] == "Position_combination") {
+				var detail_td = document.createElement("td");
+				detail_td.setAttribute("style", "border:1px solid black; min-width:80px; height:18.5px;");
+				var detail_a = document.createElement('a');
+				detail_a.target = "_blank";
+				detail_a.href = "/SoybeanMADisTool/viewAlleleCatalog.php?dataset=" + dataset + "&gene=" + gene + "&chromosome=" + jsonObject[i]["Chromosome"] + "&positions=" + jsonObject[i]["Position_combination"].split(";").join("%0D%0A");
+				detail_a.innerHTML = jsonObject[i][header_array[j]];
+				detail_a.style.color = "blue";
+				detail_td.appendChild(detail_a);
+				detail_content_tr.appendChild(detail_td);
+			} else {
+				var detail_td = document.createElement("td");
+				detail_td.setAttribute("style", "border:1px solid black; min-width:80px; height:18.5px;");
+				detail_td.innerHTML = jsonObject[i][header_array[j]];
+				detail_content_tr.appendChild(detail_td);
+			}
 		}
 		detail_table.appendChild(detail_content_tr);
 	}
@@ -316,46 +272,66 @@ function downloadMADisResults(dataset, gene, phenotype_dict, max_combination) {
 			var res = JSON.parse(response);
 			var res = res.data;
 
+			// Put all the genotype accessions into an array and deduplicate the array
+			var genotype_accession_array = [];
+			for (let i = 0; i < res.length; i++) {
+				genotype_accession_array.push(res[i]['Accession']);
+				genotype_accession_array.push(res[i]['SoyKB_Accession']);
+				genotype_accession_array.push(res[i]['GRIN_Accession']);
+			}
+			genotype_accession_array = genotype_accession_array.filter(function(value, index, array) {
+				return array.indexOf(value) === index;
+			});
+
+			// Intersect phenotype accession array and genotype accession array
+			var distinct_accession_array = genotype_accession_array.filter(function(element) { return phenotype_accession_array.indexOf(element) !== -1; });
+			distinct_accession_array = distinct_accession_array.filter(function(element) { return phenotype_accession_array.indexOf(element) !== -1; });
+			distinct_accession_array = distinct_accession_array.filter(function(element) { return genotype_accession_array.indexOf(element) !== -1; });
+			distinct_accession_array = distinct_accession_array.filter(function(element) { return phenotype_accession_array.indexOf(element) !== -1; });
+			distinct_accession_array = distinct_accession_array.filter(function(element) { return genotype_accession_array.indexOf(element) !== -1; });
+
+			// Discard phenotype accessions that are not in the distinct accession array
+			phenotype_accession_array = Object.keys(phenotype_dict);
+			for (let i = 0; i < phenotype_accession_array.length; i++) {
+				if (!(distinct_accession_array.includes(phenotype_accession_array[i]))) {
+					delete phenotype_dict[phenotype_accession_array[i]];
+				}
+			}
+			phenotype_accession_array = Object.keys(phenotype_dict);
+
 			// Create a genotype dictionary
 			var genotype_dict = {};
 			for (let i = 0; i < res.length; i++) {
-				if (phenotype_accession_array.includes(res[i]['Accession'])) {
-					var accession = res[i]['Accession'];
+				var accession = null;
+				if (distinct_accession_array.includes(res[i]['Accession'])) {
+					accession = res[i]['Accession'];
+				} else if (distinct_accession_array.includes(res[i]['SoyKB_Accession'])) {
+					accession = res[i]['SoyKB_Accession'];
+				} else if (distinct_accession_array.includes(res[i]['GRIN_Accession'])) {
+					accession = res[i]['GRIN_Accession'];
+				}
+
+				if (accession != null) {
+					var chromosome = res[i]['Chromosome'];
 					var position = res[i]['Position'];
 					var category_index = res[i]['Category_Index'];
 					if (!(accession in genotype_dict)) {
-						genotype_dict[accession] = {};
+						genotype_dict[accession] = {
+							Chromosome: chromosome,
+							Position_Category_Index: {}
+						};
 					}
-					if (!(position in genotype_dict[accession])) {
-						genotype_dict[accession][position] = category_index;
+					if (!("Chromosome" in genotype_dict[accession])) {
+						genotype_dict[accession]['Chromosome'] = chromosome;
 					}
-				} else if (phenotype_accession_array.includes(res[i]['SoyKB_Accession'])) {
-					var accession = res[i]['SoyKB_Accession'];
-					var position = res[i]['Position'];
-					var category_index = res[i]['Category_Index'];
-					if (!(accession in genotype_dict)) {
-						genotype_dict[accession] = {};
+					if (!("Position_Category_Index" in genotype_dict[accession])) {
+						genotype_dict[accession]['Position_Category_Index'] = {};
 					}
-					if (!(position in genotype_dict[accession])) {
-						genotype_dict[accession][position] = category_index;
-					}
-				} else if (phenotype_accession_array.includes(res[i]['GRIN_Accession'])) {
-					var accession = res[i]['GRIN_Accession'];
-					var position = res[i]['Position'];
-					var category_index = res[i]['Category_Index'];
-					if (!(accession in genotype_dict)) {
-						genotype_dict[accession] = {};
-					}
-					if (!(position in genotype_dict[accession])) {
-						genotype_dict[accession][position] = category_index;
+					if (!(position in genotype_dict[accession]["Position_Category_Index"])) {
+						genotype_dict[accession]["Position_Category_Index"][position] = category_index;
 					}
 				}
 			}
-
-			// Deduplicate phenotype dictionary and genotype dictionary
-			var pheno_geno_dict = deduplicatePhenotypeDictAndGenotypeDict(phenotype_dict, genotype_dict);
-			phenotype_dict = pheno_geno_dict['Phenotype'];
-			genotype_dict = pheno_geno_dict['Genotype'];
 
 			// Perform MADis algorithm here
 			var madis_result = runMADisAlgorithm(phenotype_dict, genotype_dict, max_combination);
@@ -391,58 +367,66 @@ function updateMADisResults(dataset, gene, phenotype_dict, max_combination) {
 			var res = JSON.parse(response);
 			var res = res.data;
 
-			// Discard accessions that are not in the phenotype dictionary
-			// var discard_indexes = [];
-			// for (let i = 0; i < res.length; i++) {
-			// 	if (!(phenotype_accession_array.includes(res[i]['Accession']) || phenotype_accession_array.includes(res[i]['SoyKB_Accession']) || phenotype_accession_array.includes(res[i]['GRIN_Accession']))) {
-			// 		discard_indexes.push(i);
-			// 	}
-			// }
-			// discard_indexes.reverse();
-			// for (let i = 0; i < discard_indexes.length; i++) {
-			// 	res.splice(discard_indexes[i], 1);
-			// }
+			// Put all the genotype accessions into an array and deduplicate the array
+			var genotype_accession_array = [];
+			for (let i = 0; i < res.length; i++) {
+				genotype_accession_array.push(res[i]['Accession']);
+				genotype_accession_array.push(res[i]['SoyKB_Accession']);
+				genotype_accession_array.push(res[i]['GRIN_Accession']);
+			}
+			genotype_accession_array = genotype_accession_array.filter(function(value, index, array) {
+				return array.indexOf(value) === index;
+			});
+
+			// Intersect phenotype accession array and genotype accession array
+			var distinct_accession_array = genotype_accession_array.filter(function(element) { return phenotype_accession_array.indexOf(element) !== -1; });
+			distinct_accession_array = distinct_accession_array.filter(function(element) { return phenotype_accession_array.indexOf(element) !== -1; });
+			distinct_accession_array = distinct_accession_array.filter(function(element) { return genotype_accession_array.indexOf(element) !== -1; });
+			distinct_accession_array = distinct_accession_array.filter(function(element) { return phenotype_accession_array.indexOf(element) !== -1; });
+			distinct_accession_array = distinct_accession_array.filter(function(element) { return genotype_accession_array.indexOf(element) !== -1; });
+
+			// Discard phenotype accessions that are not in the distinct accession array
+			phenotype_accession_array = Object.keys(phenotype_dict);
+			for (let i = 0; i < phenotype_accession_array.length; i++) {
+				if (!(distinct_accession_array.includes(phenotype_accession_array[i]))) {
+					delete phenotype_dict[phenotype_accession_array[i]];
+				}
+			}
+			phenotype_accession_array = Object.keys(phenotype_dict);
 
 			// Create a genotype dictionary
 			var genotype_dict = {};
 			for (let i = 0; i < res.length; i++) {
-				if (phenotype_accession_array.includes(res[i]['Accession'])) {
-					var accession = res[i]['Accession'];
+				var accession = null;
+				if (distinct_accession_array.includes(res[i]['Accession'])) {
+					accession = res[i]['Accession'];
+				} else if (distinct_accession_array.includes(res[i]['SoyKB_Accession'])) {
+					accession = res[i]['SoyKB_Accession'];
+				} else if (distinct_accession_array.includes(res[i]['GRIN_Accession'])) {
+					accession = res[i]['GRIN_Accession'];
+				}
+
+				if (accession != null) {
+					var chromosome = res[i]['Chromosome'];
 					var position = res[i]['Position'];
 					var category_index = res[i]['Category_Index'];
 					if (!(accession in genotype_dict)) {
-						genotype_dict[accession] = {};
+						genotype_dict[accession] = {
+							Chromosome: chromosome,
+							Position_Category_Index: {}
+						};
 					}
-					if (!(position in genotype_dict[accession])) {
-						genotype_dict[accession][position] = category_index;
+					if (!("Chromosome" in genotype_dict[accession])) {
+						genotype_dict[accession]['Chromosome'] = chromosome;
 					}
-				} else if (phenotype_accession_array.includes(res[i]['SoyKB_Accession'])) {
-					var accession = res[i]['SoyKB_Accession'];
-					var position = res[i]['Position'];
-					var category_index = res[i]['Category_Index'];
-					if (!(accession in genotype_dict)) {
-						genotype_dict[accession] = {};
+					if (!("Position_Category_Index" in genotype_dict[accession])) {
+						genotype_dict[accession]['Position_Category_Index'] = {};
 					}
-					if (!(position in genotype_dict[accession])) {
-						genotype_dict[accession][position] = category_index;
-					}
-				} else if (phenotype_accession_array.includes(res[i]['GRIN_Accession'])) {
-					var accession = res[i]['GRIN_Accession'];
-					var position = res[i]['Position'];
-					var category_index = res[i]['Category_Index'];
-					if (!(accession in genotype_dict)) {
-						genotype_dict[accession] = {};
-					}
-					if (!(position in genotype_dict[accession])) {
-						genotype_dict[accession][position] = category_index;
+					if (!(position in genotype_dict[accession]["Position_Category_Index"])) {
+						genotype_dict[accession]["Position_Category_Index"][position] = category_index;
 					}
 				}
 			}
-
-			// Deduplicate phenotype dictionary and genotype dictionary
-			var pheno_geno_dict = deduplicatePhenotypeDictAndGenotypeDict(phenotype_dict, genotype_dict);
-			phenotype_dict = pheno_geno_dict['Phenotype'];
-			genotype_dict = pheno_geno_dict['Genotype'];
 
 			// Perform MADis algorithm here
 			var madis_result = runMADisAlgorithm(phenotype_dict, genotype_dict, max_combination);
@@ -453,13 +437,13 @@ function updateMADisResults(dataset, gene, phenotype_dict, max_combination) {
 				let download_button = document.createElement("button");
 				download_button.innerHTML = "Download";
 				download_button.addEventListener('click', function(){
-					downloadMADisResults(dataset, gene, phenotype_dict);
+					downloadMADisResults(dataset, gene, phenotype_dict, max_combination);
 				});
 				document.getElementById('madis_result_'+gene).appendChild(download_button);
 				document.getElementById('madis_result_'+gene).appendChild(document.createElement("br"));
 				document.getElementById('madis_result_'+gene).appendChild(document.createElement("br"));
 				document.getElementById('madis_result_'+gene).appendChild(
-					constructTable(madis_result)
+					constructTable(dataset, gene, madis_result)
 				);
 				document.getElementById('madis_result_'+gene).style.overflow = 'scroll';
 			} else {
@@ -477,6 +461,9 @@ function updateMADisResults(dataset, gene, phenotype_dict, max_combination) {
 
 
 function updateAllMADisResults(dataset, gene_array, phenotype_dict, max_combination) {
+	for (let i = 0; i < gene_array.length; i++) {
+		document.getElementById('madis_result_'+gene_array[i]).innerHTML = "Loading...";
+	}
 	for (let i = 0; i < gene_array.length; i++) {
 		updateMADisResults(dataset, gene_array[i], phenotype_dict, max_combination)
 	}

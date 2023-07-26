@@ -11,7 +11,7 @@ function getGenotypeDataQueryString($dataset, $gene, $chromosome, $db, $gff_tabl
 	$query_str = $query_str . "     FROM " . $db . "." . $gff_table . " AS GFF ";
 	$query_str = $query_str . "     INNER JOIN " . $db . ".mad_" . $dataset . "_func_eff_" . $chromosome . " AS FUNC ";
 	$query_str = $query_str . "     ON (FUNC.Chromosome = GFF.Chromosome) AND (FUNC.Position >= GFF.Start) AND (FUNC.Position <= GFF.End) ";
-	$query_str = $query_str . "     WHERE (GFF.Name = '" . $gene . "') AND (FUNC.Gene_Name LIKE '%" . $gene . "%') AND ((FUNC.Putative_Impact=\"HIGH\") OR (FUNC.Putative_Impact=\"MODERATE\"))";
+	$query_str = $query_str . "     WHERE (GFF.Name = '" . $gene . "') AND (FUNC.Gene_Name LIKE '%" . $gene . "%') ";
 	$query_str = $query_str . ") AS COMB1 ";
 	$query_str = $query_str . "INNER JOIN " . $db . ".mad_" . $dataset . "_genotype_" . $chromosome . " AS GENO ";
 	$query_str = $query_str . "ON (GENO.Chromosome = COMB1.Chromosome) AND (GENO.Position = COMB1.Position) ";
