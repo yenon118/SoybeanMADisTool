@@ -221,10 +221,6 @@ function constructTable(dataset, gene, jsonObject) {
 	let detail_header_tr = document.createElement("tr");
 	let header_array = Object.keys(jsonObject[0]);
 
-	// Create an empty header for checkbox column
-	var detail_th = document.createElement("th");
-	detail_header_tr.appendChild(detail_th);
-
 	// Loop through the header array to create table header
 	for (let i = 0; i < header_array.length; i++) {
 		// If the heading in the header is Phenotype_explain_percentage, change the heading to Phenotype_explain (%)
@@ -247,15 +243,6 @@ function constructTable(dataset, gene, jsonObject) {
 	for (let i = 0; i < jsonObject.length; i++) {
 		var detail_content_tr = document.createElement("tr");
 		detail_content_tr.style.backgroundColor = ((i % 2) ? "#FFFFFF" : "#DDFFDD");
-
-		// Create first column checkbox
-		var detail_td = document.createElement("td");
-		var detail_checkbox = document.createElement("input");
-		detail_checkbox.type = "checkbox";
-		detail_checkbox.id = String(gene) + "_checkbox_index_" + i;
-		detail_checkbox.name = detail_checkbox.id;
-		detail_td.appendChild(detail_checkbox);
-		detail_content_tr.appendChild(detail_td);
 
 		// Loop through the header array to create table content
 		for (let j = 0; j < header_array.length; j++) {
@@ -465,236 +452,28 @@ function updateMADisResults(dataset, gene, position_array, phenotype_dict, max_c
 				// Clean the MADis result div innerHTML
 				document.getElementById('madis_result_' + gene).innerHTML = "";
 
-				let uncheck_all_button = document.createElement("button");
-				uncheck_all_button.innerHTML = "Uncheck All";
-				uncheck_all_button.addEventListener('click', function () {
-					// Get the IDs of all the checkboxes that are related to the selected gene
-					let checkbox_ids = document.querySelectorAll('input[id^="' + gene + '_checkbox_index_"]');
-					for (let i = 0; i < checkbox_ids.length; i++) {
-						checkbox_ids[i].checked = false;
-					}
-				});
-				document.getElementById('madis_result_' + gene).appendChild(uncheck_all_button);
-
-				let check_all_button = document.createElement("button");
-				check_all_button.innerHTML = "Check all";
-				check_all_button.style.marginLeft = "10px";
-				check_all_button.addEventListener('click', function () {
-					// Get the IDs of all the checkboxes that are related to the selected gene
-					let checkbox_ids = document.querySelectorAll('input[id^="' + gene + '_checkbox_index_"]');
-					for (let i = 0; i < checkbox_ids.length; i++) {
-						checkbox_ids[i].checked = true;
-					}
-				});
-				document.getElementById('madis_result_' + gene).appendChild(check_all_button);
-
-				if (madis_result.length > 10) {
-					let check_top_10_rows_button = document.createElement("button");
-					check_top_10_rows_button.innerHTML = "Check top 10 rows";
-					check_top_10_rows_button.style.marginLeft = "10px";
-					check_top_10_rows_button.addEventListener('click', function () {
-						// Get the IDs of all the checkboxes that are related to the selected gene
-						let checkbox_ids = document.querySelectorAll('input[id^="' + gene + '_checkbox_index_"]');
-						let num_of_rows_need_check = Math.min(10, checkbox_ids.length);
-						for (let i = 0; i < checkbox_ids.length; i++) {
-							if (i < num_of_rows_need_check) {
-								checkbox_ids[i].checked = true;
-							} else {
-								checkbox_ids[i].checked = false;
-							}
-						}
-					});
-					document.getElementById('madis_result_' + gene).appendChild(check_top_10_rows_button);
-				}
-
-				if (madis_result.length >= 20) {
-					let check_top_20_rows_button = document.createElement("button");
-					check_top_20_rows_button.innerHTML = "Check top 20 rows";
-					check_top_20_rows_button.style.marginLeft = "10px";
-					check_top_20_rows_button.addEventListener('click', function () {
-						// Get the IDs of all the checkboxes that are related to the selected gene
-						let checkbox_ids = document.querySelectorAll('input[id^="' + gene + '_checkbox_index_"]');
-						let num_of_rows_need_check = Math.min(20, checkbox_ids.length);
-						for (let i = 0; i < checkbox_ids.length; i++) {
-							if (i < num_of_rows_need_check) {
-								checkbox_ids[i].checked = true;
-							} else {
-								checkbox_ids[i].checked = false;
-							}
-						}
-					});
-					document.getElementById('madis_result_' + gene).appendChild(check_top_20_rows_button);
-				}
-
-				if (madis_result.length >= 50) {
-					let check_top_50_rows_button = document.createElement("button");
-					check_top_50_rows_button.innerHTML = "Check top 50 rows";
-					check_top_50_rows_button.style.marginLeft = "10px";
-					check_top_50_rows_button.addEventListener('click', function () {
-						// Get the IDs of all the checkboxes that are related to the selected gene
-						let checkbox_ids = document.querySelectorAll('input[id^="' + gene + '_checkbox_index_"]');
-						let num_of_rows_need_check = Math.min(50, checkbox_ids.length);
-						for (let i = 0; i < checkbox_ids.length; i++) {
-							if (i < num_of_rows_need_check) {
-								checkbox_ids[i].checked = true;
-							} else {
-								checkbox_ids[i].checked = false;
-							}
-						}
-					});
-					document.getElementById('madis_result_' + gene).appendChild(check_top_50_rows_button);
-				}
-
-				if (madis_result.length * 0.01 >= 1) {
-					let check_top_1_percent_button = document.createElement("button");
-					check_top_1_percent_button.innerHTML = "Check top 1 percent";
-					check_top_1_percent_button.style.marginLeft = "10px";
-					check_top_1_percent_button.addEventListener('click', function () {
-						// Get the IDs of all the checkboxes that are related to the selected gene
-						let checkbox_ids = document.querySelectorAll('input[id^="' + gene + '_checkbox_index_"]');
-						let num_of_rows_need_check = Math.min(parseInt(checkbox_ids.length * 0.01), checkbox_ids.length);
-						for (let i = 0; i < checkbox_ids.length; i++) {
-							if (i < num_of_rows_need_check) {
-								checkbox_ids[i].checked = true;
-							} else {
-								checkbox_ids[i].checked = false;
-							}
-						}
-					});
-					document.getElementById('madis_result_' + gene).appendChild(check_top_1_percent_button);
-				}
-
-				if (madis_result.length * 0.05 >= 1) {
-					let check_top_5_percent_button = document.createElement("button");
-					check_top_5_percent_button.innerHTML = "Check top 5 percent";
-					check_top_5_percent_button.style.marginLeft = "10px";
-					check_top_5_percent_button.addEventListener('click', function () {
-						// Get the IDs of all the checkboxes that are related to the selected gene
-						let checkbox_ids = document.querySelectorAll('input[id^="' + gene + '_checkbox_index_"]');
-						let num_of_rows_need_check = Math.min(parseInt(checkbox_ids.length * 0.05), checkbox_ids.length);
-						for (let i = 0; i < checkbox_ids.length; i++) {
-							if (i < num_of_rows_need_check) {
-								checkbox_ids[i].checked = true;
-							} else {
-								checkbox_ids[i].checked = false;
-							}
-						}
-					});
-					document.getElementById('madis_result_' + gene).appendChild(check_top_5_percent_button);
-				}
-
-				if (madis_result.length * 0.1 >= 1) {
-					let check_top_10_percent_button = document.createElement("button");
-					check_top_10_percent_button.innerHTML = "Check top 10 percent";
-					check_top_10_percent_button.style.marginLeft = "10px";
-					check_top_10_percent_button.addEventListener('click', function () {
-						// Get the IDs of all the checkboxes that are related to the selected gene
-						let checkbox_ids = document.querySelectorAll('input[id^="' + gene + '_checkbox_index_"]');
-						let num_of_rows_need_check = Math.min(parseInt(checkbox_ids.length * 0.1), checkbox_ids.length);
-						for (let i = 0; i < checkbox_ids.length; i++) {
-							if (i < num_of_rows_need_check) {
-								checkbox_ids[i].checked = true;
-							} else {
-								checkbox_ids[i].checked = false;
-							}
-						}
-					});
-					document.getElementById('madis_result_' + gene).appendChild(check_top_10_percent_button);
-				}
-
-				if (madis_result.length * 0.2 >= 1) {
-					let check_top_20_percent_button = document.createElement("button");
-					check_top_20_percent_button.innerHTML = "Check top 20 percent";
-					check_top_20_percent_button.style.marginLeft = "10px";
-					check_top_20_percent_button.addEventListener('click', function () {
-						// Get the IDs of all the checkboxes that are related to the selected gene
-						let checkbox_ids = document.querySelectorAll('input[id^="' + gene + '_checkbox_index_"]');
-						let num_of_rows_need_check = Math.min(parseInt(checkbox_ids.length * 0.2), checkbox_ids.length);
-						for (let i = 0; i < checkbox_ids.length; i++) {
-							if (i < num_of_rows_need_check) {
-								checkbox_ids[i].checked = true;
-							} else {
-								checkbox_ids[i].checked = false;
-							}
-						}
-					});
-					document.getElementById('madis_result_' + gene).appendChild(check_top_20_percent_button);
-				}
-
-				// if (madis_result.length * 0.5 >= 1) {
-				// 	let check_top_50_percent_button = document.createElement("button");
-				// 	check_top_50_percent_button.innerHTML = "Check top 50 percent";
-				// 	check_top_50_percent_button.style.marginLeft = "10px";
-				// 	check_top_50_percent_button.addEventListener('click', function () {
-				// 		// Get the IDs of all the checkboxes that are related to the selected gene
-				// 		let checkbox_ids = document.querySelectorAll('input[id^="' + gene + '_checkbox_index_"]');
-				// 		let num_of_rows_need_check = Math.min(parseInt(checkbox_ids.length * 0.5), checkbox_ids.length);
-				// 		for (let i = 0; i < checkbox_ids.length; i++) {
-				// 			if (i < num_of_rows_need_check) {
-				// 				checkbox_ids[i].checked = true;
-				// 			} else {
-				// 				checkbox_ids[i].checked = false;
-				// 			}
-				// 		}
-				// 	});
-				// 	document.getElementById('madis_result_' + gene).appendChild(check_top_50_percent_button);
-				// }
-
-				// Empty lines
-				document.getElementById('madis_result_' + gene).appendChild(document.createElement("br"));
-				document.getElementById('madis_result_' + gene).appendChild(document.createElement("br"));
-
-				// Compute MADis layer 2 button
-				let compute_madis_layer_2_button = document.createElement("button");
-				compute_madis_layer_2_button.style.backgroundColor = "#DDFFDD";
-				compute_madis_layer_2_button.innerHTML = "Compute with MADis Algorithm for Selected Positions";
-				compute_madis_layer_2_button.id = "compute_madis_layer_2_button__" + gene;
-				compute_madis_layer_2_button.name = compute_madis_layer_2_button.id;
-				compute_madis_layer_2_button.addEventListener('click', function () {
-					let position_array = [];
-
-					// Get the IDs of all the checkboxes that are related to the selected gene
-					let checkbox_ids = document.querySelectorAll('input[id^="' + gene + '_checkbox_index_"]');
-					for (let i = 0; i < checkbox_ids.length; i++) {
-						// If the checkbox is checked, get the row index and use the row index to get the positions
-						if (checkbox_ids[i].checked) {
-							// Get row index
-							let row_index = checkbox_ids[i].id.replace(/.*_checkbox_index_/, '');
-
-							// Get positions using row index and push them to the position array
-							let temp_positions = document.getElementById(String(gene) + "_Combination_of_positions_" + row_index).innerHTML;
-							if (temp_positions != "") {
-								temp_positions.split(';').forEach(function (item, index, array) {
-									if (!(position_array.includes(item))) {
-										position_array.push(item);
-									}
-								});
-							}
-						}
-					}
-					position_array.sort();
-
-					if (position_array.length < 1) {
-						alert("Please select any checkboxes of this gene to continue the calculation!!!");
-					} else {
-						window.open("viewMADisResultsLayer2.php?dataset=" + dataset + "&gene=" + gene + "&phenotype_file_name=" + phenotype_file_name + "&positions=" + position_array.join("%0D%0A"));
-					}
-
-				});
-				document.getElementById('madis_result_' + gene).appendChild(compute_madis_layer_2_button);
-
 				// Download button
 				let download_button = document.createElement("button");
-				download_button.innerHTML = "Download All Results";
-				download_button.style.marginLeft = "10px";
+				download_button.innerHTML = "Download";
 				download_button.addEventListener('click', function () {
-					downloadMADisResults(dataset, gene, [], phenotype_dict, max_combination);
+					downloadMADisResults(dataset, gene, position_array, phenotype_dict, max_combination);
 				});
 				document.getElementById('madis_result_' + gene).appendChild(download_button);
 
 				// Empty lines
 				document.getElementById('madis_result_' + gene).appendChild(document.createElement("br"));
 				document.getElementById('madis_result_' + gene).appendChild(document.createElement("br"));
+
+				if (madis_result.length == 50000) {
+					// Warning message
+					let warning_message = document.createElement("p");
+					warning_message.innerHTML = "Warning: The number of combinations is too large. Only the first 50000 combinations are processed. Please check less checkboxes to reduce the number of positions.";
+					document.getElementById('madis_result_' + gene).appendChild(warning_message);
+
+					// Empty lines
+					document.getElementById('madis_result_' + gene).appendChild(document.createElement("br"));
+					document.getElementById('madis_result_' + gene).appendChild(document.createElement("br"));
+				}
 
 				// Display MADis results in a table
 				document.getElementById('madis_result_' + gene).appendChild(
@@ -705,7 +484,7 @@ function updateMADisResults(dataset, gene, position_array, phenotype_dict, max_c
 				// Clean the MADis result div innerHTML
 				document.getElementById('madis_result_' + gene).innerHTML = "";
 
-				// Display error message
+				// Error message
 				let error_message = document.createElement("p");
 				error_message.innerHTML = "Unable to construct table!!!";
 				document.getElementById('madis_result_' + gene).appendChild(error_message);
@@ -716,14 +495,4 @@ function updateMADisResults(dataset, gene, position_array, phenotype_dict, max_c
 			console.log('Error with code ' + xhr.status + ': ' + xhr.statusText);
 		}
 	});
-}
-
-
-function updateAllMADisResults(dataset, gene_array, phenotype_dict, max_combination) {
-	for (let i = 0; i < gene_array.length; i++) {
-		document.getElementById('madis_result_' + gene_array[i]).innerHTML = "Loading...";
-	}
-	for (let i = 0; i < gene_array.length; i++) {
-		updateMADisResults(dataset, gene_array[i], [], phenotype_dict, max_combination);
-	}
 }

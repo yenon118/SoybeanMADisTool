@@ -7,6 +7,21 @@ include 'getGenotypeDataQueryString.php';
 
 $dataset = trim($_GET['Dataset']);
 $gene = $_GET['Gene'];
+$positions = $_GET['Positions'];
+
+if (empty($positions)) {
+	$position_array = array();
+} elseif (is_string($positions)) {
+	$position_array = preg_split("/[;, \n]+/", $positions);
+	for ($i = 0; $i < count($position_array); $i++) {
+		$position_array[$i] = trim($position_array[$i]);
+	}
+} elseif (is_array($positions)) {
+	$position_array = $positions;
+	for ($i = 0; $i < count($position_array); $i++) {
+		$position_array[$i] = trim($position_array[$i]);
+	}
+}
 
 $db = "soykb";
 
@@ -37,6 +52,7 @@ $query_str = getGenotypeDataQueryString(
 	$dataset,
 	$gene,
 	$chromosome,
+	$position_array,
 	$db,
 	$gff_table,
 	$accession_mapping_table,

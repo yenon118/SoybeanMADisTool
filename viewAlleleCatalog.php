@@ -3,7 +3,7 @@
 <script src="https://code.jquery.com/ui/1.13.1/jquery-ui.js"></script>
 
 <?php
-$TITLE = "Soybean Allele Catalog Tool";
+$TITLE = "Soybean MADis Tool";
 
 // include '../header.php';
 include '../config.php';
@@ -42,7 +42,9 @@ $gene = trim($gene);
 $chromosome = trim($chromosome);
 $positions = trim($positions);
 
-if (is_string($positions)) {
+if (empty($positions)) {
+	$position_array = array();
+} elseif (is_string($positions)) {
 	$position_array = preg_split("/[;, \n]+/", $positions);
 	for ($i = 0; $i < count($position_array); $i++) {
 		$position_array[$i] = trim($position_array[$i]);
@@ -96,6 +98,12 @@ $result_arr = pdoResultFilter($result);
 
 // Render result to a table
 if(isset($result_arr) && is_array($result_arr) && !empty($result_arr)) {
+
+	if (!empty($positions)) {
+		echo "<div style='margin-top:10px;margin-bottom:10px;' align='center'>";
+		echo "<button style=\"margin-right:20px;\"><a href=\"/SoybeanMADisTool/viewAlleleCatalog.php?dataset=" . $dataset . "&gene=" . $gene . "&chromosome=" . $chromosome . "\" target=\"_blank\">View Full Allele Catalog</a></button>";
+		echo "</div>";
+	}
 
 	// Make table
 	echo "<div style='width:100%; height:auto; border:3px solid #000; overflow:scroll; max-height:1000px;'>";

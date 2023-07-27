@@ -24,8 +24,8 @@ function getSummarizedDataByChromosomePositionsQueryString($dataset, $gene, $chr
 	$query_str = $query_str . "		ON (FUNC.Chromosome = GFF.Chromosome) AND (FUNC.Position >= GFF.Start) AND (FUNC.Position <= GFF.End) ";
 	$query_str = $query_str . "		WHERE (GFF.ID=\"" . $gene . "\") AND (GFF.Feature=\"gene\") AND (FUNC.Gene_Name LIKE '%" . $gene . "%') AND (FUNC.Chromosome=\"" . $chromosome . "\") ";
 
-	if (($position_array != "") && (is_array($position_array))) {
-		if (count($position_array) > 0) {
+	if (is_array($position_array)) {
+		if (!empty($position_array)) {
 			$query_str = $query_str . "AND (FUNC.Position IN ('";
 			for ($i = 0; $i < count($position_array); $i++) {
 				if($i < (count($position_array)-1)){
