@@ -53,39 +53,41 @@ if (empty($positions)) {
 <?php
 $phenotype_array = array();
 
-if (file_exists($phenotype_file)) {
-	try {
-		$phenotype_reader = fopen($phenotype_file, "r") or die("Unable to open phenotype file!");
-		// Output one line until end-of-file
-		while(!feof($phenotype_reader)) {
-			array_push($phenotype_array, fgets($phenotype_reader));
+if (!empty($phenotype_file)) {
+	if (file_exists($phenotype_file)) {
+		try {
+			$phenotype_reader = fopen($phenotype_file, "r") or die("Unable to open phenotype file!");
+			// Output one line until end-of-file
+			while(!feof($phenotype_reader)) {
+				array_push($phenotype_array, fgets($phenotype_reader));
+			}
+			fclose($phenotype_reader);
+		} catch (Exception $e) {
+			echo "Unable to open phenotype file!!!";
+			echo 'Caught exception: ',  $e->getMessage(), "\n";
 		}
-		fclose($phenotype_reader);
-	} catch (Exception $e) {
-		echo "Unable to open phenotype file!!!";
-		echo 'Caught exception: ',  $e->getMessage(), "\n";
+	} else {
+		echo "Phenotype file does not exists!!!";
 	}
-} else {
-	echo "Phenotype file does not exists!!!";
 }
-
 ?>
 
 
-
 <?php
+echo "<p>Combinations of a maximum of 7 variant positions are computed and displayed.</p>";
 
 echo "<h4>Dataset: " . $dataset . "</h4>";
 echo "<h4>Gene: " . $gene . "</h4>";
-echo "<h4>Positions: " . implode(", ", $position_array) . "</h4>";
+echo "<h4>Variant positions selected for computing: " . implode(", ", $position_array) . "</h4>";
 
 echo "<div id=\"madis_result_" . $gene . "\" name=\"madis_result_" . $gene . "\">";
 echo "</div>";
 
 echo "<br/><br/>";
-
 ?>
 
+
+<script type="text/javascript" language="javascript" src="./js/runMADisAlgorithm.js"></script>
 <script type="text/javascript" language="javascript" src="./js/viewMADisResultsLayer2.js"></script>
 
 <script type="text/javascript" language="javascript">
@@ -96,9 +98,10 @@ echo "<br/><br/>";
 	var phenotype_file_name = <?php if(isset($phenotype_file_name)) {echo json_encode($phenotype_file_name, JSON_INVALID_UTF8_IGNORE);} else {echo "";}?>;
 	var phenotype_array = <?php if(isset($phenotype_array)) {echo json_encode($phenotype_array, JSON_INVALID_UTF8_IGNORE);} else {echo "";}?>;
 
-
 	var phenotype_dict = processPhenotypeArray(phenotype_array);
+	document.getElementById('madis_result_' + gene).innerHTML = "Loading...";
 	updateMADisResults(dataset, gene, position_array, phenotype_dict, max_combination);
 </script>
+
 
 <?php include '../footer.php'; ?>

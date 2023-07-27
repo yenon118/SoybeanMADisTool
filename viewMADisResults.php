@@ -42,9 +42,12 @@ $file_error = $_FILES['file_1']['error'];
 $file_size = $_FILES['file_1']['size'];
 
 // Copy the uploaded file to the uploads folder
-$phenotype_file_name = preg_replace('/.*\//i', '', $file_tmp_name) . '_' . $file_name;
-$phenotype_file = './uploads/tmp_phenotype_files/' . $phenotype_file_name;
-$super_flag = move_uploaded_file($file_tmp_name, $phenotype_file);
+$phenotype_file_moved_flag = false;
+if (!empty($file_tmp_name)) {
+	$phenotype_file_name = preg_replace('/.*\//i', '', $file_tmp_name) . '_' . $file_name;
+	$phenotype_file = './uploads/tmp_phenotype_files/' . $phenotype_file_name;
+	$phenotype_file_moved_flag = move_uploaded_file($file_tmp_name, $phenotype_file);
+}
 
 // Check max_combination value is reasonable
 if (empty($max_combination)) {
@@ -57,7 +60,6 @@ if (empty($max_combination)) {
 		$max_combination = 2;
 	}
 }
-
 
 // Parse the gene string
 if (empty($gene)) {
@@ -84,40 +86,54 @@ $dataset = trim($dataset);
 <?php
 $phenotype_array = array();
 
-if (file_exists($phenotype_file)) {
-	try {
-		$phenotype_reader = fopen($phenotype_file, "r") or die("Unable to open phenotype file!");
-		// Output one line until end-of-file
-		while(!feof($phenotype_reader)) {
-			array_push($phenotype_array, fgets($phenotype_reader));
+if (!empty($phenotype_file)) {
+	if (file_exists($phenotype_file)) {
+		try {
+			$phenotype_reader = fopen($phenotype_file, "r") or die("Unable to open phenotype file!");
+			// Output one line until end-of-file
+			while(!feof($phenotype_reader)) {
+				array_push($phenotype_array, fgets($phenotype_reader));
+			}
+			fclose($phenotype_reader);
+		} catch (Exception $e) {
+			echo "Unable to open phenotype file!!!";
+			echo 'Caught exception: ',  $e->getMessage(), "\n";
 		}
-		fclose($phenotype_reader);
-	} catch (Exception $e) {
-		echo "Unable to open phenotype file!!!";
-		echo 'Caught exception: ',  $e->getMessage(), "\n";
+	} else {
+		echo "Phenotype file does not exists!!! <br />";
 	}
-} else {
-	echo "Phenotype file does not exists!!!";
 }
+
 ?>
 
 
+<!-- Populate the div tag or accordion with div tags to get ready to receive results -->
 <?php
+echo "<p>Result for a combination of 2 variant positions. To check the contribution of other variant positions, please select additional combinations and press \"Compute with MADis Algorithm for Selected  Positions\".</p>";
 
 echo "<h4>Dataset: " . $dataset . "</h4>";
 
-echo "<div id=\"accordion\">";
-
-for ($i = 0; $i < count($gene_array); $i++) {
-	echo "<h3>" . $gene_array[$i] . "</h3>";
-	echo "<div id=\"madis_result_" . $gene_array[$i] . "\" name=\"madis_result_" . $gene_array[$i] . "\">";
+if (count($gene_array) > 1) {
+	echo "<div id=\"accordion\">";
+	for ($i = 0; $i < count($gene_array); $i++) {
+		echo "<h3>Gene: " . $gene_array[$i] . "</h3>";
+		echo "<div id=\"madis_result_" . $gene_array[$i] . "\" name=\"madis_result_" . $gene_array[$i] . "\">";
+		echo "</div>";
+	}
 	echo "</div>";
+	echo "<br/><br/>";
+} elseif (count($gene_array) == 1) {
+	echo "<h4>Gene: " . $gene_array[0] . "</h4>";
+	echo "<div id=\"madis_result_" . $gene_array[0] . "\" name=\"madis_result_" . $gene_array[0] . "\">";
+	echo "</div>";
+	echo "<br/><br/>";
+} else {
+	echo "No gene is provided!!! <br />";
 }
-
-echo "</div>";
-echo "<br/><br/>";
 ?>
 
+
+<script type="text/javascript" language="javascript" src="./js/runMADisAlgorithm.js"></script>
 <script type="text/javascript" language="javascript" src="./js/viewMADisResults.js"></script>
 
 <script type="text/javascript" language="javascript">
@@ -130,5 +146,6 @@ echo "<br/><br/>";
 	var phenotype_dict = processPhenotypeArray(phenotype_array);
 	updateAllMADisResults(dataset, gene_array, phenotype_dict, max_combination);
 </script>
+
 
 <?php include '../footer.php'; ?>

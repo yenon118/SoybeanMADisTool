@@ -6,6 +6,8 @@ $TITLE = "Soybean MADis Tool";
 include '../header.php';
 ?>
 
+<p style="margin-left: 20px; font-size: 120%;"><b>The Soybean MADis Tool is a mutative allele discovery tool composed of mutative allele position combinative calculations.</b></p>
+
 <div>
 	<table width="100%" cellspacing="14" cellpadding="14">
 		<tr>
@@ -28,18 +30,19 @@ include '../header.php';
 					<br />
 					<label><b>Phenotype Data Upload:</b></label>
 					<span id="phenotype_data_hint_1" style="font-size:9pt">&nbsp;(tab delimited txt or comma separated csv only)</span>
-					<button type="button" onclick="downloadExampleData()">Example Data</button>
+					<button type="button" style="min-width: 100px;" onclick="downloadExampleData()">Example Data</button>
 					<br />
 					<input type="file" id="file_1" name="file_1" accept="text/csv, text/plain">
-					<!-- <br /> -->
-					<!-- <br /> -->
+					<br />
+					<br />
 					<!-- <label><b>Maximum combination:</b></label> -->
 					<!-- <span id="max_combination_hint_1" style="font-size:9pt">&nbsp;(accept any number between 2 and 7 inclusive; default: 2)</span> -->
 					<!-- <br /> -->
 					<!-- <input type="number" id="max_combination_1" name="max_combination_1"> -->
 					<br />
 					<br />
-					<input style="float: right; clear: both; width: 150px;" type="submit" value="Search">
+					<span style="font-size:9pt">* MADis computation starts with 2 variant positions</span>
+					<input style="float: right; clear: both; min-width: 260px;" type="submit" value="Search">
 				</form>
 			</td>
 		</tr>
