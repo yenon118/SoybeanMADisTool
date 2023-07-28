@@ -1,6 +1,6 @@
 <?php
 
-function getGenotypeDataQueryString($dataset, $gene, $chromosome, $position_array, $db, $gff_table, $accession_mapping_table, $having = ""){
+function getGenotypeDataQueryString($dataset, $gene, $chromosome, $position_array, $db, $gff_table, $accession_mapping_table, $where = ""){
 
 	// Generate SQL string
 	$query_str = "SELECT ";
@@ -32,7 +32,7 @@ function getGenotypeDataQueryString($dataset, $gene, $chromosome, $position_arra
 	$query_str = $query_str . "ON (GENO.Chromosome = COMB1.Chromosome) AND (GENO.Position = COMB1.Position) ";
 	$query_str = $query_str . "LEFT JOIN " . $db . "." . $accession_mapping_table . " AS AM ";
 	$query_str = $query_str . "ON (AM.Accession = GENO.Accession) ";
-	$query_str = $query_str . $having . " ";
+	$query_str = $query_str . $where . " ";
 	$query_str = $query_str . "ORDER BY GENO.Chromosome, GENO.Position, GENO.Accession DESC; ";
 
 	return $query_str;

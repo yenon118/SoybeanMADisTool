@@ -24,11 +24,23 @@ include '../config.php';
 include './php/pdoResultFilter.php';
 ?>
 
+<link rel="stylesheet" href="css/modal.css" />
+
 <!-- Back button -->
 <a href="/SoybeanMADisTool/"><button> &lt; Back </button></a>
 
 <br />
 <br />
+
+<!-- Modal -->
+<div id="info-modal" class="info-modal">
+	<!-- Modal content -->
+	<div class="modal-content">
+		<span class="modal-close">&times;</span>
+		<div id="modal-content-div" style='width:100%; height:auto; border:3px solid #000; overflow:scroll;max-height:1000px;'></div>
+		<div id="modal-content-comment"></div>
+	</div>
+</div>
 
 <!-- Get and process the variables -->
 <?php
@@ -133,6 +145,7 @@ if (count($gene_array) > 1) {
 ?>
 
 
+<script type="text/javascript" language="javascript" src="./js/modal.js"></script>
 <script type="text/javascript" language="javascript" src="./js/runMADisAlgorithm.js"></script>
 <script type="text/javascript" language="javascript" src="./js/viewMADisResults.js"></script>
 

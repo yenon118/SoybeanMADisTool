@@ -61,7 +61,96 @@ function processPhenotypeArray(phenotype_array) {
 }
 
 
-function constructTable(dataset, gene, jsonObject) {
+// Query the genotype data of specific accessions. This is used to create metadata for the MADis result table.
+async function queryGenotypeDataOfSpecificAccessions(dataset, gene, position_array, accession_array) {
+	return new Promise((resolve, reject) => {
+		$.ajax({
+			url: './php/queryGenotypeDataOfSpecificAccessions.php',
+			type: 'GET',
+			contentType: 'application/json',
+			data: {
+				Dataset: dataset,
+				Gene: gene,
+				Positions: position_array,
+				Accessions: accession_array
+			},
+			success: function (response) {
+				var res = JSON.parse(response);
+				res = res.data;
+
+				resolve(res);
+			}, error: function (xhr, status, error) {
+				console.log('Error with code ' + xhr.status + ': ' + xhr.statusText);
+				reject([]);
+			}
+		});
+	});
+}
+
+
+function constructMetadataTable(dataset, gene, jsonObject, phenotype_dict) {
+
+	// Create table
+	let detail_table = document.createElement("table");
+	detail_table.setAttribute("style", "text-align:center; border:3px solid #000;");
+
+	let detail_header_tr = document.createElement("tr");
+	let header_array = ["Gene", "Chromosome", "Position", "Accession", "SoyKB_Accession", "GRIN_Accession", "Genotype", "Category", "Phenotype"];
+
+	for (let i = 0; i < header_array.length; i++) {
+		var detail_th = document.createElement("th");
+		detail_th.setAttribute("style", "border:1px solid black; min-width:80px; height:18.5px;");
+		detail_th.innerHTML = header_array[i];
+		detail_header_tr.appendChild(detail_th);
+	}
+	detail_table.appendChild(detail_header_tr);
+
+	for (let i = 0; i < jsonObject.length; i++) {
+		var detail_content_tr = document.createElement("tr");
+		detail_content_tr.style.backgroundColor = ((i % 2) ? "#FFFFFF" : "#DDFFDD");
+
+		// Loop through the header array to create table content
+		for (let j = 0; j < header_array.length; j++) {
+			if (header_array[j] != "Phenotype") {
+				var detail_td = document.createElement("td");
+				detail_td.setAttribute("style", "border:1px solid black; min-width:80px; height:18.5px;");
+				detail_td.innerHTML = jsonObject[i][header_array[j]];
+				detail_content_tr.appendChild(detail_td);
+			} else {
+				// Extract the phenotype value from the phenotype dictionary
+				let phenotype_value = "";
+				if (Object.keys(phenotype_dict).includes(jsonObject[i]["Accession"])) {
+					phenotype_value = phenotype_dict[jsonObject[i]["Accession"]];
+				} else if (Object.keys(phenotype_dict).includes(jsonObject[i]["SoyKB_Accession"])) {
+					phenotype_value = phenotype_dict[jsonObject[i]["SoyKB_Accession"]];
+				} else if (Object.keys(phenotype_dict).includes(jsonObject[i]["GRIN_Accession"])) {
+					phenotype_value = phenotype_dict[jsonObject[i]["GRIN_Accession"]];
+				}
+
+				// Convert the phenotype value to WT or MUT
+				if (phenotype_value != "") {
+					if (parseInt(phenotype_value) == 0) {
+						phenotype_value = "WT";
+					} else if (parseInt(phenotype_value) == 1) {
+						phenotype_value = "MUT";
+					}
+				}
+
+				// Build the table cell
+				var detail_td = document.createElement("td");
+				detail_td.setAttribute("style", "border:1px solid black; min-width:80px; height:18.5px;");
+				detail_td.innerHTML = phenotype_value;
+				detail_content_tr.appendChild(detail_td);
+			}
+		}
+		detail_table.appendChild(detail_content_tr);
+	}
+
+	return (detail_table);
+}
+
+
+function constructTable(dataset, gene, jsonObject, phenotype_dict) {
 
 	// Create table
 	let detail_table = document.createElement("table");
@@ -76,20 +165,21 @@ function constructTable(dataset, gene, jsonObject) {
 
 	// Loop through the header array to create table header
 	for (let i = 0; i < header_array.length; i++) {
-		// If the heading in the header is Phenotype_explain_percentage, change the heading to Phenotype_explain (%)
-		if (header_array[i] == "Phenotype_explain_percentage") {
-			var detail_th = document.createElement("th");
-			detail_th.setAttribute("style", "border:1px solid black; min-width:80px; height:18.5px;");
-			detail_th.innerHTML = "Explained (%)";
-			detail_header_tr.appendChild(detail_th);
-		} else {
-			var detail_th = document.createElement("th");
-			detail_th.setAttribute("style", "border:1px solid black; min-width:80px; height:18.5px;");
-			detail_th.innerHTML = header_array[i];
-			detail_header_tr.appendChild(detail_th);
+		if (!header_array[i].startsWith('Accessions_of')) {
+			// If the heading in the header is Phenotype_explain_percentage, change the heading to Phenotype_explain (%)
+			if (header_array[i] == "Phenotype_explain_percentage") {
+				var detail_th = document.createElement("th");
+				detail_th.setAttribute("style", "border:1px solid black; min-width:80px; height:18.5px;");
+				detail_th.innerHTML = "Explained (%)";
+				detail_header_tr.appendChild(detail_th);
+			} else {
+				var detail_th = document.createElement("th");
+				detail_th.setAttribute("style", "border:1px solid black; min-width:80px; height:18.5px;");
+				detail_th.innerHTML = header_array[i];
+				detail_header_tr.appendChild(detail_th);
+			}
 		}
 	}
-
 	detail_table.appendChild(detail_header_tr);
 
 	for (let i = 0; i < jsonObject.length; i++) {
@@ -108,22 +198,65 @@ function constructTable(dataset, gene, jsonObject) {
 		// Loop through the header array to create table content
 		for (let j = 0; j < header_array.length; j++) {
 			// All position combinations in the Combination_of_positions column need to link to Allele Catalog
-			if (header_array[j] == "Combination_of_positions") {
-				var detail_td = document.createElement("td");
-				detail_td.setAttribute("style", "border:1px solid black; min-width:80px; height:18.5px;");
-				var detail_a = document.createElement('a');
-				detail_a.id = String(gene) + "_" + header_array[j] + "_" + i;
-				detail_a.target = "_blank";
-				detail_a.href = "/SoybeanMADisTool/viewAlleleCatalog.php?dataset=" + dataset + "&gene=" + gene + "&chromosome=" + jsonObject[i]["Chromosome"] + "&positions=" + jsonObject[i]["Combination_of_positions"].split(";").join("%0D%0A");
-				detail_a.innerHTML = jsonObject[i][header_array[j]];
-				detail_a.style.color = "blue";
-				detail_td.appendChild(detail_a);
-				detail_content_tr.appendChild(detail_td);
-			} else {
-				var detail_td = document.createElement("td");
-				detail_td.setAttribute("style", "border:1px solid black; min-width:80px; height:18.5px;");
-				detail_td.innerHTML = jsonObject[i][header_array[j]];
-				detail_content_tr.appendChild(detail_td);
+			if (!header_array[j].startsWith('Accessions_of')) {
+				if (header_array[j] == "Combination_of_positions") {
+					var detail_td = document.createElement("td");
+					detail_td.setAttribute("style", "border:1px solid black; min-width:80px; height:18.5px;");
+					var detail_a = document.createElement('a');
+					detail_a.id = String(gene) + "_" + header_array[j] + "_" + i;
+					detail_a.target = "_blank";
+					detail_a.href = "/SoybeanMADisTool/viewAlleleCatalog.php?dataset=" + dataset + "&gene=" + gene + "&chromosome=" + jsonObject[i]["Chromosome"] + "&positions=" + jsonObject[i]["Combination_of_positions"].split(";").join("%0D%0A");
+					detail_a.innerHTML = jsonObject[i][header_array[j]];
+					detail_a.style.color = "blue";
+					detail_td.appendChild(detail_a);
+					detail_content_tr.appendChild(detail_td);
+				} else if (header_array[j] == "N_WT_match" || header_array[j] == "N_WT_unmatch" || header_array[j] == "N_MUT_match" || header_array[j] == "N_MUT_unmatch" || header_array[j] == "N_unexplained") {
+					// If accession count is not 0, we put a link to the number. Otherwise, we just put the number.
+					if (parseInt(jsonObject[i][header_array[j]]) > 0) {
+						var detail_td = document.createElement("td");
+						detail_td.setAttribute("style", "border:1px solid black; min-width:80px; height:18.5px;");
+						var detail_a = document.createElement('a');
+						detail_a.id = String(gene) + "_" + header_array[j] + "_" + i;
+						detail_a.href = "javascript:void(0);";
+						detail_a.addEventListener('click', async function () {
+							// Get the accessions related header key from the header array
+							let accessions_related_header_key = header_array[j].replace(/^N_/, 'Accessions_of_');
+
+							// Get the accession array and position array
+							let accession_array = jsonObject[i][accessions_related_header_key];
+							let position_array = jsonObject[i]["Combination_of_positions"];
+
+							var result_array = await queryGenotypeDataOfSpecificAccessions(dataset, gene, position_array, accession_array);
+
+							// Open modal
+							document.getElementById("info-modal").style.display = "block";
+
+							// Construct metadata table
+							var metadata_table = constructMetadataTable(dataset, gene, result_array, phenotype_dict);
+
+							document.getElementById('modal-content-div').appendChild(metadata_table);
+
+							var p_metadata_length = document.createElement("p");
+							p_metadata_length.innerHTML = "Total number of records: " + result_array.length;
+
+							document.getElementById("modal-content-comment").appendChild(p_metadata_length);
+						});
+						detail_a.innerHTML = jsonObject[i][header_array[j]];
+						detail_a.style.color = "blue";
+						detail_td.appendChild(detail_a);
+						detail_content_tr.appendChild(detail_td);
+					} else {
+						var detail_td = document.createElement("td");
+						detail_td.setAttribute("style", "border:1px solid black; min-width:80px; height:18.5px;");
+						detail_td.innerHTML = jsonObject[i][header_array[j]];
+						detail_content_tr.appendChild(detail_td);
+					}
+				} else {
+					var detail_td = document.createElement("td");
+					detail_td.setAttribute("style", "border:1px solid black; min-width:80px; height:18.5px;");
+					detail_td.innerHTML = jsonObject[i][header_array[j]];
+					detail_content_tr.appendChild(detail_td);
+				}
 			}
 		}
 		detail_table.appendChild(detail_content_tr);
@@ -212,6 +345,7 @@ function downloadMADisResults(dataset, gene, position_array, phenotype_dict, max
 
 			// Perform MADis algorithm here
 			var madis_result = runMADisAlgorithm(phenotype_dict, genotype_dict, max_combination);
+			madis_result = filterMADisResult(madis_result);
 
 			// Download MADis results
 			if (madis_result.length > 0) {
@@ -544,9 +678,21 @@ function updateMADisResults(dataset, gene, position_array, phenotype_dict, max_c
 				document.getElementById('madis_result_' + gene).appendChild(document.createElement("br"));
 				document.getElementById('madis_result_' + gene).appendChild(document.createElement("br"));
 
+				if (madis_result.length == 50000) {
+					// Warning message
+					let warning_message = document.createElement("p");
+					warning_message.innerHTML = "Warning: The number of combinations is too large. Only the first 50000 combinations are processed. Please check less checkboxes to reduce the number of positions.";
+					warning_message.style.color = "red";
+					document.getElementById('madis_result_' + gene).appendChild(warning_message);
+
+					// Empty lines
+					document.getElementById('madis_result_' + gene).appendChild(document.createElement("br"));
+					document.getElementById('madis_result_' + gene).appendChild(document.createElement("br"));
+				}
+
 				// Display MADis results in a table
 				document.getElementById('madis_result_' + gene).appendChild(
-					constructTable(dataset, gene, madis_result)
+					constructTable(dataset, gene, madis_result, phenotype_dict)
 				);
 				document.getElementById('madis_result_' + gene).style.overflow = 'scroll';
 			} else {

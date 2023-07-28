@@ -24,6 +24,53 @@ function generateCombinations(arr, max_combination) {
 	return combinations;
 }
 
+// filter MADis Results
+function filterMADisResult(res_dict_array) {
+	var new_res_dict_array = new Array(res_dict_array.length);
+
+	for (let i = 0; i < res_dict_array.length; i++) {
+		var res_dict = res_dict_array[i];
+		var chromosome = res_dict['Chromosome'];
+		var combination_of_positions = res_dict['Combination_of_positions'];
+		var n_positions = res_dict['N_positions'];
+		var score = res_dict['Score'];
+		var n_total = res_dict['N_total'];
+		var n_WT = res_dict['N_WT'];
+		var n_WT_match = res_dict['N_WT_match'];
+		var accessions_of_WT_match = res_dict['Accessions_of_WT_match'];
+		var n_WT_unmatch = res_dict['N_WT_unmatch'];
+		var accessions_of_WT_unmatch = res_dict['Accessions_of_WT_unmatch'];
+		var n_MUT = res_dict['N_MUT'];
+		var n_MUT_match = res_dict['N_MUT_match'];
+		var accessions_of_MUT_match = res_dict['Accessions_of_MUT_match'];
+		var n_MUT_unmatch = res_dict['N_MUT_unmatch'];
+		var accessions_of_MUT_unmatch = res_dict['Accessions_of_MUT_unmatch'];
+		var phenotype_explain_percentage = res_dict['Phenotype_explain_percentage'];
+		var n_unexplained = res_dict['N_unexplained'];
+		var accessions_of_unexplained = res_dict['Accessions_of_unexplained'];
+
+		var new_res_dict = {
+			'Chromosome': chromosome,
+			'Combination_of_positions': combination_of_positions,
+			'N_positions': n_positions,
+			'Score': score,
+			'N_total': n_total,
+			'N_WT': n_WT,
+			'N_WT_match': n_WT_match,
+			'N_WT_unmatch': n_WT_unmatch,
+			'N_MUT': n_MUT,
+			'N_MUT_match': n_MUT_match,
+			'N_MUT_unmatch': n_MUT_unmatch,
+			'Phenotype_explain_percentage': phenotype_explain_percentage,
+			'N_unexplained': n_unexplained
+		};
+
+		new_res_dict_array[i] = new_res_dict;
+	}
+
+	return (new_res_dict_array);
+}
+
 
 function runMADisAlgorithm(phenotype_dict, genotype_dict, max_combination) {
 	var d_score = {
@@ -99,9 +146,17 @@ function runMADisAlgorithm(phenotype_dict, genotype_dict, max_combination) {
 			'N_total': N_tot,
 			'N_WT': n_wt_p,
 			'N_WT_match': 0,
+			'Accessions_of_WT_match': [],
+			'N_WT_unmatch': 0,
+			'Accessions_of_WT_unmatch': [],
 			'N_MUT': n_mut_p,
 			'N_MUT_match': 0,
-			'Phenotype_explain_percentage': 0
+			'Accessions_of_MUT_match': [],
+			'N_MUT_unmatch': 0,
+			'Accessions_of_MUT_unmatch': [],
+			'Phenotype_explain_percentage': 0,
+			'N_unexplained': 0,
+			'Accessions_of_unexplained': [],
 		};
 
 		var geno_sum = {};
@@ -123,7 +178,7 @@ function runMADisAlgorithm(phenotype_dict, genotype_dict, max_combination) {
 				}
 			}
 
-			// Get the remainder of the sum (no mutation will be 0 as total combination is less than 10)
+			// Get the remainder of the sum (non mutation will be 0 as total combination is less than 10)
 			geno_sum[accession] = geno_sum[accession] % 10
 
 			// Calculate the score
@@ -131,10 +186,21 @@ function runMADisAlgorithm(phenotype_dict, genotype_dict, max_combination) {
 				res_dict['Score'] = res_dict['Score'] + 1;
 				if (parseInt(phenotype_dict[accession]) == 1) {
 					res_dict['N_MUT_match'] = res_dict['N_MUT_match'] + 1;
+					res_dict['Accessions_of_MUT_match'].push(accession);
 				} else {
 					res_dict['N_WT_match'] = res_dict['N_WT_match'] + 1;
+					res_dict['Accessions_of_WT_match'].push(accession);
 				}
 			} else {
+				res_dict['N_unexplained'] = res_dict['N_unexplained'] + 1;
+				res_dict['Accessions_of_unexplained'].push(accession);
+				if (parseInt(phenotype_dict[accession]) == 1) {
+					res_dict['N_MUT_unmatch'] = res_dict['N_MUT_unmatch'] + 1;
+					res_dict['Accessions_of_MUT_unmatch'].push(accession);
+				} else {
+					res_dict['N_WT_unmatch'] = res_dict['N_WT_unmatch'] + 1;
+					res_dict['Accessions_of_WT_unmatch'].push(accession);
+				}
 				res_dict['Score'] = res_dict['Score'] + d_score[String(geno_sum[accession]) + String(phenotype_dict[accession])]
 			}
 		}
