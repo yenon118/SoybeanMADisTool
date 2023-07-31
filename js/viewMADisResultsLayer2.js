@@ -88,6 +88,40 @@ async function queryGenotypeDataOfSpecificAccessions(dataset, gene, position_arr
 }
 
 
+function constructPhenotypeSummaryTable(dataset, gene, jsonObject, phenotype_dict) {
+	// Create N_total, N_WT, N_MUT table
+	var detail_table = document.createElement("table");
+	detail_table.setAttribute("style", "text-align:center; border:3px solid #000;");
+
+	var detail_header_tr = document.createElement("tr");
+	var header_array = ["N_total", "N_WT", "N_MUT"];
+
+	// Loop through the header array to create table header
+	for (let i = 0; i < header_array.length; i++) {
+		var detail_th = document.createElement("th");
+		detail_th.setAttribute("style", "border:1px solid black; min-width:80px; height:18.5px;");
+		detail_th.innerHTML = header_array[i];
+		detail_header_tr.appendChild(detail_th);
+	}
+	detail_table.appendChild(detail_header_tr);
+
+	for (let i = 0; i < 1; i++) {
+		var detail_content_tr = document.createElement("tr");
+
+		// Loop through the header array to create table content
+		for (let j = 0; j < header_array.length; j++) {
+			var detail_td = document.createElement("td");
+			detail_td.setAttribute("style", "border:1px solid black; min-width:80px; height:18.5px;");
+			detail_td.innerHTML = jsonObject[i][header_array[j]];
+			detail_content_tr.appendChild(detail_td);
+		}
+		detail_table.appendChild(detail_content_tr);
+	}
+
+	return detail_table;
+}
+
+
 function constructMetadataTable(dataset, gene, jsonObject, phenotype_dict) {
 
 	// Create table
@@ -161,7 +195,7 @@ function constructTable(dataset, gene, jsonObject, phenotype_dict) {
 
 	// Loop through the header array to create table header
 	for (let i = 0; i < header_array.length; i++) {
-		if (!header_array[i].startsWith('Accessions_of')) {
+		if (!header_array[i].startsWith('Accessions_of') && header_array[i] != "N_total" && header_array[i] != "N_WT" && header_array[i] != "N_MUT") {
 			// If the heading in the header is Phenotype_explain_percentage, change the heading to Phenotype_explain (%)
 			if (header_array[i] == "Phenotype_explain_percentage") {
 				var detail_th = document.createElement("th");
@@ -185,7 +219,7 @@ function constructTable(dataset, gene, jsonObject, phenotype_dict) {
 		// Loop through the header array to create table content
 		for (let j = 0; j < header_array.length; j++) {
 			// All position combinations in the Combination_of_positions column need to link to Allele Catalog
-			if (!header_array[j].startsWith('Accessions_of')) {
+			if (!header_array[j].startsWith('Accessions_of') && header_array[j] != "N_total" && header_array[j] != "N_WT" && header_array[j] != "N_MUT") {
 				if (header_array[j] == "Combination_of_positions") {
 					var detail_td = document.createElement("td");
 					detail_td.setAttribute("style", "border:1px solid black; min-width:80px; height:18.5px;");
@@ -434,48 +468,13 @@ function updateMADisResults(dataset, gene, position_array, phenotype_dict, max_c
 				// Clean the MADis result div innerHTML
 				document.getElementById('madis_result_' + gene).innerHTML = "";
 
-				// Empty lines
+				// Create phenotype summary table
+				document.getElementById('madis_result_' + gene).appendChild(
+					constructPhenotypeSummaryTable(dataset, gene, madis_result, phenotype_dict)
+				);
+
+				// Empty line
 				document.getElementById('madis_result_' + gene).appendChild(document.createElement("br"));
-				document.getElementById('madis_result_' + gene).appendChild(document.createElement("br"));
-
-				// Compute MADis layer 2 button
-				let compute_madis_layer_2_button = document.createElement("button");
-				compute_madis_layer_2_button.style.backgroundColor = "#DDFFDD";
-				compute_madis_layer_2_button.innerHTML = "Compute with MADis Algorithm for Selected Positions";
-				compute_madis_layer_2_button.id = "compute_madis_layer_2_button__" + gene;
-				compute_madis_layer_2_button.name = compute_madis_layer_2_button.id;
-				compute_madis_layer_2_button.addEventListener('click', function () {
-					let position_array = [];
-
-					// Get the IDs of all the checkboxes that are related to the selected gene
-					let checkbox_ids = document.querySelectorAll('input[id^="' + gene + '_checkbox_index_"]');
-					for (let i = 0; i < checkbox_ids.length; i++) {
-						// If the checkbox is checked, get the row index and use the row index to get the positions
-						if (checkbox_ids[i].checked) {
-							// Get row index
-							let row_index = checkbox_ids[i].id.replace(/.*_checkbox_index_/, '');
-
-							// Get positions using row index and push them to the position array
-							let temp_positions = document.getElementById(String(gene) + "_Combination_of_positions_" + row_index).innerHTML;
-							if (temp_positions != "") {
-								temp_positions.split(';').forEach(function (item, index, array) {
-									if (!(position_array.includes(item))) {
-										position_array.push(item);
-									}
-								});
-							}
-						}
-					}
-					position_array.sort();
-
-					if (position_array.length < 1) {
-						alert("Please select any checkboxes of this gene to continue the calculation!!!");
-					} else {
-						window.open("viewMADisResultsLayer2.php?dataset=" + dataset + "&gene=" + gene + "&phenotype_file_name=" + phenotype_file_name + "&positions=" + position_array.join("%0D%0A"));
-					}
-
-				});
-				document.getElementById('madis_result_' + gene).appendChild(compute_madis_layer_2_button);
 
 				// Download button
 				let download_button = document.createElement("button");

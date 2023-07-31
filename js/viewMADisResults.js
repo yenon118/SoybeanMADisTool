@@ -88,6 +88,40 @@ async function queryGenotypeDataOfSpecificAccessions(dataset, gene, position_arr
 }
 
 
+function constructPhenotypeSummaryTable(dataset, gene, jsonObject, phenotype_dict) {
+	// Create N_total, N_WT, N_MUT table
+	var detail_table = document.createElement("table");
+	detail_table.setAttribute("style", "text-align:center; border:3px solid #000;");
+
+	var detail_header_tr = document.createElement("tr");
+	var header_array = ["N_total", "N_WT", "N_MUT"];
+
+	// Loop through the header array to create table header
+	for (let i = 0; i < header_array.length; i++) {
+		var detail_th = document.createElement("th");
+		detail_th.setAttribute("style", "border:1px solid black; min-width:80px; height:18.5px;");
+		detail_th.innerHTML = header_array[i];
+		detail_header_tr.appendChild(detail_th);
+	}
+	detail_table.appendChild(detail_header_tr);
+
+	for (let i = 0; i < 1; i++) {
+		var detail_content_tr = document.createElement("tr");
+
+		// Loop through the header array to create table content
+		for (let j = 0; j < header_array.length; j++) {
+			var detail_td = document.createElement("td");
+			detail_td.setAttribute("style", "border:1px solid black; min-width:80px; height:18.5px;");
+			detail_td.innerHTML = jsonObject[i][header_array[j]];
+			detail_content_tr.appendChild(detail_td);
+		}
+		detail_table.appendChild(detail_content_tr);
+	}
+
+	return detail_table;
+}
+
+
 function constructMetadataTable(dataset, gene, jsonObject, phenotype_dict) {
 
 	// Create table
@@ -165,7 +199,7 @@ function constructTable(dataset, gene, jsonObject, phenotype_dict) {
 
 	// Loop through the header array to create table header
 	for (let i = 0; i < header_array.length; i++) {
-		if (!header_array[i].startsWith('Accessions_of')) {
+		if (!header_array[i].startsWith('Accessions_of') && header_array[i] != "N_total" && header_array[i] != "N_WT" && header_array[i] != "N_MUT") {
 			// If the heading in the header is Phenotype_explain_percentage, change the heading to Phenotype_explain (%)
 			if (header_array[i] == "Phenotype_explain_percentage") {
 				var detail_th = document.createElement("th");
@@ -198,7 +232,7 @@ function constructTable(dataset, gene, jsonObject, phenotype_dict) {
 		// Loop through the header array to create table content
 		for (let j = 0; j < header_array.length; j++) {
 			// All position combinations in the Combination_of_positions column need to link to Allele Catalog
-			if (!header_array[j].startsWith('Accessions_of')) {
+			if (!header_array[j].startsWith('Accessions_of') && header_array[j] != "N_total" && header_array[j] != "N_WT" && header_array[j] != "N_MUT") {
 				if (header_array[j] == "Combination_of_positions") {
 					var detail_td = document.createElement("td");
 					detail_td.setAttribute("style", "border:1px solid black; min-width:80px; height:18.5px;");
@@ -446,6 +480,14 @@ function updateMADisResults(dataset, gene, position_array, phenotype_dict, max_c
 			if (madis_result.length > 0) {
 				// Clean the MADis result div innerHTML
 				document.getElementById('madis_result_' + gene).innerHTML = "";
+
+				// Create phenotype summary table
+				document.getElementById('madis_result_' + gene).appendChild(
+					constructPhenotypeSummaryTable(dataset, gene, madis_result, phenotype_dict)
+				);
+
+				// Empty line
+				document.getElementById('madis_result_' + gene).appendChild(document.createElement("br"));
 
 				let uncheck_all_button = document.createElement("button");
 				uncheck_all_button.innerHTML = "Uncheck All";
