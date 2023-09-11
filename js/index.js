@@ -181,3 +181,13 @@ function downloadExampleData() {
 		}
 	});
 }
+
+
+function downloadGuidelines() {
+	let downloadAnchorNode = document.createElement('a');
+	downloadAnchorNode.setAttribute("href", "assets/Guidelines/Soybean_MADis_Guidelines.pdf");
+	downloadAnchorNode.setAttribute("target", "_blank");
+	document.body.appendChild(downloadAnchorNode); // required for firefox
+	downloadAnchorNode.click();
+	downloadAnchorNode.remove();
+}
