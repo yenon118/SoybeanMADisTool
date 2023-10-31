@@ -14,7 +14,7 @@ function getDataByChromosomePositionsQueryString($dataset, $gene, $chromosome, $
 	$query_str = $query_str . "	COMB1.Gene, GENO.Chromosome, ";
 	$query_str = $query_str . "	GROUP_CONCAT(GENO.Position SEPARATOR ' ') AS Position, ";
 	$query_str = $query_str . "	GROUP_CONCAT(GENO.Genotype SEPARATOR ' ') AS Genotype, ";
-	$query_str = $query_str . "	GROUP_CONCAT(CONCAT_WS('|', GENO.Genotype, IFNULL( FUNC2.Functional_Effect, GENO.Category ), FUNC2.Amino_Acid_Change) SEPARATOR ' ') AS Genotype_Description, ";
+	$query_str = $query_str . "	GROUP_CONCAT(CONCAT_WS('|', GENO.Genotype, IFNULL( FUNC2.Functional_Effect, GENO.Category ), FUNC2.Amino_Acid_Change, GENO.Imputation) SEPARATOR ' ') AS Genotype_Description, ";
 	$query_str = $query_str . "	GROUP_CONCAT(IFNULL(GENO.Imputation, '-') SEPARATOR ' ') AS Imputation ";
 	$query_str = $query_str . "	FROM ( ";
 	$query_str = $query_str . "		SELECT DISTINCT FUNC.Chromosome, FUNC.Position, GFF.ID As Gene ";
