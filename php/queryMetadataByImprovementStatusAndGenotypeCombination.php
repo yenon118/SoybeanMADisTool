@@ -15,14 +15,21 @@ $genotype = trim($_GET['Genotype']);
 $genotype_description = trim($_GET['Genotype_Description']);
 
 if (is_string($position)) {
-	$position_array = preg_split("/[;, \n]+/", $position);
-	for ($i = 0; $i < count($position_array); $i++) {
-		$position_array[$i] = trim($position_array[$i]);
+	$position = trim($position);
+	$temp_position_array = preg_split("/[;, \n]+/", $position);
+	$position_array = array();
+	for ($i = 0; $i < count($temp_position_array); $i++) {
+		if (!empty(trim($temp_position_array[$i]))) {
+			array_push($position_array, trim($temp_position_array[$i]));
+		}
 	}
 } elseif (is_array($position)) {
-	$position_array = $position;
-	for ($i = 0; $i < count($position_array); $i++) {
-		$position_array[$i] = trim($position_array[$i]);
+	$temp_position_array = $position;
+	$position_array = array();
+	for ($i = 0; $i < count($temp_position_array); $i++) {
+		if (!empty(trim($temp_position_array[$i]))) {
+			array_push($position_array, trim($temp_position_array[$i]));
+		}
 	}
 }
 

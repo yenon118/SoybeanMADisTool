@@ -13,28 +13,42 @@ $accessions = $_GET['Accessions'];
 if (empty($positions)) {
 	$position_array = array();
 } elseif (is_string($positions)) {
-	$position_array = preg_split("/[;, \n]+/", $positions);
-	for ($i = 0; $i < count($position_array); $i++) {
-		$position_array[$i] = trim($position_array[$i]);
+	$positions = trim($positions);
+	$temp_position_array = preg_split("/[;, \n]+/", $positions);
+	$position_array = array();
+	for ($i = 0; $i < count($temp_position_array); $i++) {
+		if (!empty(trim($temp_position_array[$i]))) {
+			array_push($position_array, trim($temp_position_array[$i]));
+		}
 	}
 } elseif (is_array($positions)) {
-	$position_array = $positions;
-	for ($i = 0; $i < count($position_array); $i++) {
-		$position_array[$i] = trim($position_array[$i]);
+	$temp_position_array = $positions;
+	$position_array = array();
+	for ($i = 0; $i < count($temp_position_array); $i++) {
+		if (!empty(trim($temp_position_array[$i]))) {
+			array_push($position_array, trim($temp_position_array[$i]));
+		}
 	}
 }
 
 if (empty($accessions)) {
 	$accession_array = array();
 } elseif (is_string($accessions)) {
-	$accession_array = preg_split("/[;, \n]+/", $accessions);
-	for ($i = 0; $i < count($accession_array); $i++) {
-		$accession_array[$i] = trim($accession_array[$i]);
+	$accessions = trim($accessions);
+	$temp_accession_array = preg_split("/[;, \n]+/", $accessions);
+	$accession_array = array();
+	for ($i = 0; $i < count($temp_accession_array); $i++) {
+		if (!empty(trim($temp_accession_array[$i]))) {
+			array_push($accession_array, trim($temp_accession_array[$i]));
+		}
 	}
 } elseif (is_array($accessions)) {
-	$accession_array = $accessions;
-	for ($i = 0; $i < count($accession_array); $i++) {
-		$accession_array[$i] = trim($accession_array[$i]);
+	$temp_accession_array = $accessions;
+	$accession_array = array();
+	for ($i = 0; $i < count($temp_accession_array); $i++) {
+		if (!empty(trim($temp_accession_array[$i]))) {
+			array_push($accession_array, trim($temp_accession_array[$i]));
+		}
 	}
 }
 

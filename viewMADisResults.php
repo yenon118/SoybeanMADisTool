@@ -77,14 +77,21 @@ if (empty($max_combination)) {
 if (empty($gene)) {
 	$gene_array = array();
 } elseif (is_string($gene)) {
-	$gene_array = preg_split("/[;, \n]+/", $gene);
-	for ($i = 0; $i < count($gene_array); $i++) {
-		$gene_array[$i] = trim($gene_array[$i]);
+	$gene = trim($gene);
+	$temp_gene_array = preg_split("/[;, \n]+/", $gene);
+	$gene_array = array();
+	for ($i = 0; $i < count($temp_gene_array); $i++) {
+		if (!empty(trim($temp_gene_array[$i]))) {
+			array_push($gene_array, trim($temp_gene_array[$i]));
+		}
 	}
 } elseif (is_array($gene)) {
-	$gene_array = $gene;
-	for ($i = 0; $i < count($gene_array); $i++) {
-		$gene_array[$i] = trim($gene_array[$i]);
+	$temp_gene_array = $gene;
+	$gene_array = array();
+	for ($i = 0; $i < count($temp_gene_array); $i++) {
+		if (!empty(trim($temp_gene_array[$i]))) {
+			array_push($gene_array, trim($temp_gene_array[$i]));
+		}
 	}
 }
 

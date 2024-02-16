@@ -20,7 +20,7 @@ function convertJsonToCsv(jsonObject) {
 
 
 function createAndDownloadCsvFile(csvString, filename) {
-	let dataStr = "data:text/csv;charset=utf-8," + encodeURI(csvString);
+	let dataStr = "data:text/csv;charset=utf-8," + encodeURIComponent(csvString);
 	let downloadAnchorNode = document.createElement('a');
 	downloadAnchorNode.setAttribute("href", dataStr);
 	downloadAnchorNode.setAttribute("download", filename + ".csv");
@@ -31,7 +31,7 @@ function createAndDownloadCsvFile(csvString, filename) {
 
 
 function createAndDownloadTxtFile(csvString, filename) {
-	let dataStr = "data:text/csv;charset=utf-8," + encodeURI(csvString);
+	let dataStr = "data:text/csv;charset=utf-8," + encodeURIComponent(csvString);
 	let downloadAnchorNode = document.createElement('a');
 	downloadAnchorNode.setAttribute("href", dataStr);
 	downloadAnchorNode.setAttribute("download", filename + ".txt");

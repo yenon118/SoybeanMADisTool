@@ -12,14 +12,21 @@ $positions = $_GET['Positions'];
 if (empty($positions)) {
 	$position_array = array();
 } elseif (is_string($positions)) {
-	$position_array = preg_split("/[;, \n]+/", $positions);
-	for ($i = 0; $i < count($position_array); $i++) {
-		$position_array[$i] = trim($position_array[$i]);
+	$positions = trim($positions);
+	$temp_position_array = preg_split("/[;, \n]+/", $positions);
+	$position_array = array();
+	for ($i = 0; $i < count($temp_position_array); $i++) {
+		if (!empty(trim($temp_position_array[$i]))) {
+			array_push($position_array, trim($temp_position_array[$i]));
+		}
 	}
 } elseif (is_array($positions)) {
-	$position_array = $positions;
-	for ($i = 0; $i < count($position_array); $i++) {
-		$position_array[$i] = trim($position_array[$i]);
+	$temp_position_array = $positions;
+	$position_array = array();
+	for ($i = 0; $i < count($temp_position_array); $i++) {
+		if (!empty(trim($temp_position_array[$i]))) {
+			array_push($position_array, trim($temp_position_array[$i]));
+		}
 	}
 }
 
