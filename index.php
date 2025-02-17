@@ -60,6 +60,23 @@ include '../header.php';
 <br />
 <br />
 
+<hr />
+
+<br />
+<br />
+
+<div>
+	<table width="100%" cellspacing="14" cellpadding="14">
+		<tr>
+			<td align="center" valign="top" style="border:1px solid #999999; padding:10px; background-color:#f8f8f8; text-align:left;">
+				<h2>If you use the Soybean Multiple Allele Discovery Tool in your work, please cite:</h2>
+				<br />
+				<p> Biová J, Kaňovská I, Chan YO, Immadi MS, Joshi T, Bilyeu K, Škrabišová M. <b> Natural and artificial selection of multiple alleles revealed through genomic analyses. </b> Front Genet. 2024 Jan 8;14:1320652. doi: 10.3389/fgene.2023.1320652. PMI D: 38259621; PMCID: PMC10801239. </p>
+			</td>
+		</tr>
+	</table>
+</div>
+
 
 <script type="text/javascript" language="javascript" src="./js/index.js"></script>
 

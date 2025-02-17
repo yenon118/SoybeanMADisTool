@@ -10,7 +10,7 @@ if (file_exists($file_path)) {
 	try {
 		$example_data_file = fopen($file_path, "r") or die("Unable to open example data file!");
 		// Output one line until end-of-file
-		while(!feof($example_data_file)) {
+		while (!feof($example_data_file)) {
 			array_push($result_arr, fgets($example_data_file));
 		}
 		fclose($example_data_file);

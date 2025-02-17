@@ -10,6 +10,14 @@ $gene = $_GET['Gene'];
 $positions = $_GET['Positions'];
 $accessions = $_GET['Accessions'];
 
+
+$dataset = clean_malicious_input($dataset);
+$dataset = preg_replace('/\s+/', '', $dataset);
+
+$gene = clean_malicious_input($gene);
+$gene = preg_replace('/\s+/', '', $gene);
+
+
 if (empty($positions)) {
 	$position_array = array();
 } elseif (is_string($positions)) {
@@ -17,16 +25,16 @@ if (empty($positions)) {
 	$temp_position_array = preg_split("/[;, \n]+/", $positions);
 	$position_array = array();
 	for ($i = 0; $i < count($temp_position_array); $i++) {
-		if (!empty(trim($temp_position_array[$i]))) {
-			array_push($position_array, trim($temp_position_array[$i]));
+		if (!empty(preg_replace("/[^0-9.]/", "", $temp_position_array[$i]))) {
+			array_push($position_array, preg_replace("/[^0-9.]/", "", $temp_position_array[$i]));
 		}
 	}
 } elseif (is_array($positions)) {
 	$temp_position_array = $positions;
 	$position_array = array();
 	for ($i = 0; $i < count($temp_position_array); $i++) {
-		if (!empty(trim($temp_position_array[$i]))) {
-			array_push($position_array, trim($temp_position_array[$i]));
+		if (!empty(preg_replace("/[^0-9.]/", "", $temp_position_array[$i]))) {
+			array_push($position_array, preg_replace("/[^0-9.]/", "", $temp_position_array[$i]));
 		}
 	}
 }
@@ -53,32 +61,32 @@ if (empty($accessions)) {
 }
 
 if (empty($accession_array)) {
-    $where = "";
+	$where = "";
 } else {
-    if (is_array($accession_array)) {
+	if (is_array($accession_array)) {
 		$where = $where . "WHERE (GENO.Accession IN ('";
 		for ($i = 0; $i < count($accession_array); $i++) {
-			if($i < (count($accession_array)-1)){
+			if ($i < (count($accession_array) - 1)) {
 				$where = $where . trim($accession_array[$i]) . "', '";
-			} elseif ($i == (count($accession_array)-1)) {
+			} elseif ($i == (count($accession_array) - 1)) {
 				$where = $where . trim($accession_array[$i]);
 			}
 		}
 		$where = $where . "')) ";
 		$where = $where . "OR (AM.SoyKB_Accession IN ('";
 		for ($i = 0; $i < count($accession_array); $i++) {
-			if($i < (count($accession_array)-1)){
+			if ($i < (count($accession_array) - 1)) {
 				$where = $where . trim($accession_array[$i]) . "', '";
-			} elseif ($i == (count($accession_array)-1)) {
+			} elseif ($i == (count($accession_array) - 1)) {
 				$where = $where . trim($accession_array[$i]);
 			}
 		}
 		$where = $where . "')) ";
 		$where = $where . "OR (AM.GRIN_Accession IN ('";
 		for ($i = 0; $i < count($accession_array); $i++) {
-			if($i < (count($accession_array)-1)){
+			if ($i < (count($accession_array) - 1)) {
 				$where = $where . trim($accession_array[$i]) . "', '";
-			} elseif ($i == (count($accession_array)-1)) {
+			} elseif ($i == (count($accession_array) - 1)) {
 				$where = $where . trim($accession_array[$i]);
 			}
 		}

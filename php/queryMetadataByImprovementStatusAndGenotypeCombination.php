@@ -14,21 +14,35 @@ $position = trim($_GET['Position']);
 $genotype = trim($_GET['Genotype']);
 $genotype_description = trim($_GET['Genotype_Description']);
 
+
+$dataset = clean_malicious_input($dataset);
+$dataset = preg_replace('/\s+/', '', $dataset);
+
+$key = clean_malicious_input($key);
+$key = preg_replace('/\s+/', '', $key);
+
+$gene = clean_malicious_input($gene);
+$gene = preg_replace('/\s+/', '', $gene);
+
+$chromosome = clean_malicious_input($chromosome);
+$chromosome = preg_replace('/\s+/', '', $chromosome);
+
+
 if (is_string($position)) {
 	$position = trim($position);
 	$temp_position_array = preg_split("/[;, \n]+/", $position);
 	$position_array = array();
 	for ($i = 0; $i < count($temp_position_array); $i++) {
-		if (!empty(trim($temp_position_array[$i]))) {
-			array_push($position_array, trim($temp_position_array[$i]));
+		if (!empty(preg_replace("/[^0-9.]/", "", $temp_position_array[$i]))) {
+			array_push($position_array, preg_replace("/[^0-9.]/", "", $temp_position_array[$i]));
 		}
 	}
 } elseif (is_array($position)) {
 	$temp_position_array = $position;
 	$position_array = array();
 	for ($i = 0; $i < count($temp_position_array); $i++) {
-		if (!empty(trim($temp_position_array[$i]))) {
-			array_push($position_array, trim($temp_position_array[$i]));
+		if (!empty(preg_replace("/[^0-9.]/", "", $temp_position_array[$i]))) {
+			array_push($position_array, preg_replace("/[^0-9.]/", "", $temp_position_array[$i]));
 		}
 	}
 }
@@ -44,9 +58,9 @@ $accession_mapping_table = $table_names["accession_mapping_table"];
 // Where clause of query string
 if ($key == "Total") {
 	$query_str = "WHERE (ACD.Position = '" . $position . "') AND (ACD.Genotype = '" . $genotype . "') ";
-} elseif ($key == "Cultivar"){
+} elseif ($key == "Cultivar") {
 	$query_str = "WHERE (ACD.Classification = 'NA Cultivar') AND (ACD.Position = '" . $position . "') AND (ACD.Genotype = '" . $genotype . "') ";
-} elseif ($key == "G. soja" || $key == "Soja"){
+} elseif ($key == "G. soja" || $key == "Soja") {
 	$query_str = "WHERE ";
 	$query_str = $query_str . "((ACD." . $key_column . " = 'G. soja') OR (ACD." . $key_column . " = 'Soja')) AND ";
 	$query_str = $query_str . "(ACD.Position = '" . $position . "') AND (ACD.Genotype = '" . $genotype . "') ";

@@ -1,6 +1,10 @@
-<link rel="stylesheet" href="https://code.jquery.com/ui/1.13.1/themes/base/jquery-ui.css"></link>
-<script src="https://code.jquery.com/jquery-3.6.0.min.js" integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4=" crossorigin="anonymous"></script>
-<script src="https://code.jquery.com/ui/1.13.1/jquery-ui.js"></script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<link rel="stylesheet" href="https://code.jquery.com/ui/1.14.1/themes/base/jquery-ui.css">
+</link>
+<script src="https://code.jquery.com/jquery-3.7.1.min.js" integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" crossorigin="anonymous"></script>
+<script src="https://code.jquery.com/ui/1.14.1/jquery-ui.min.js" integrity="sha256-AlTido85uXPlSyyaZNsjJXeCs07eSv3r43kyCVc8ChI=" crossorigin="anonymous"></script>
 
 <?php
 $TITLE = "Soybean MADis Tool";
@@ -35,6 +39,18 @@ $gene = $_GET['gene'];
 $positions = $_GET['positions'];
 $phenotype_file_name = $_GET['phenotype_file_name'];
 
+
+$dataset = clean_malicious_input($dataset);
+$dataset = preg_replace('/\s+/', '', $dataset);
+
+$gene = clean_malicious_input($gene);
+$gene = preg_replace('/\s+/', '', $gene);
+
+$positions = clean_malicious_input($positions);
+
+$phenotype_file_name = clean_malicious_input($phenotype_file_name);
+
+
 $max_combination = 7;
 
 // Re-create the path of the phenotype file
@@ -52,16 +68,16 @@ if (empty($positions)) {
 	$temp_position_array = preg_split("/[;, \n]+/", $positions);
 	$position_array = array();
 	for ($i = 0; $i < count($temp_position_array); $i++) {
-		if (!empty(trim($temp_position_array[$i]))) {
-			array_push($position_array, trim($temp_position_array[$i]));
+		if (!empty(preg_replace("/[^0-9.]/", "", $temp_position_array[$i]))) {
+			array_push($position_array, preg_replace("/[^0-9.]/", "", $temp_position_array[$i]));
 		}
 	}
 } elseif (is_array($positions)) {
 	$temp_position_array = $positions;
 	$position_array = array();
 	for ($i = 0; $i < count($temp_position_array); $i++) {
-		if (!empty(trim($temp_position_array[$i]))) {
-			array_push($position_array, trim($temp_position_array[$i]));
+		if (!empty(preg_replace("/[^0-9.]/", "", $temp_position_array[$i]))) {
+			array_push($position_array, preg_replace("/[^0-9.]/", "", $temp_position_array[$i]));
 		}
 	}
 }
@@ -74,16 +90,18 @@ $phenotype_array = array();
 
 if (!empty($phenotype_file)) {
 	if (file_exists($phenotype_file)) {
-		try {
-			$phenotype_reader = fopen($phenotype_file, "r") or die("Unable to open phenotype file!");
-			// Output one line until end-of-file
-			while(!feof($phenotype_reader)) {
-				array_push($phenotype_array, fgets($phenotype_reader));
+		if (str_ends_with($phenotype_file, '.txt') || str_ends_with($phenotype_file, '.csv')) {
+			try {
+				$phenotype_reader = fopen($phenotype_file, "r") or die("Unable to open phenotype file!");
+				// Output one line until end-of-file
+				while (!feof($phenotype_reader)) {
+					array_push($phenotype_array, fgets($phenotype_reader));
+				}
+				fclose($phenotype_reader);
+			} catch (Exception $e) {
+				echo "Unable to open phenotype file!!!";
+				echo 'Caught exception: ',  $e->getMessage(), "\n";
 			}
-			fclose($phenotype_reader);
-		} catch (Exception $e) {
-			echo "Unable to open phenotype file!!!";
-			echo 'Caught exception: ',  $e->getMessage(), "\n";
 		}
 	} else {
 		echo "Phenotype file does not exists!!!";
@@ -111,12 +129,36 @@ echo "<br/><br/>";
 <script type="text/javascript" language="javascript" src="./js/viewMADisResultsLayer2.js"></script>
 
 <script type="text/javascript" language="javascript">
-	var dataset = <?php if(isset($dataset)) {echo json_encode($dataset, JSON_INVALID_UTF8_IGNORE);} else {echo "";}?>;
-	var gene = <?php if(isset($gene)) {echo json_encode($gene, JSON_INVALID_UTF8_IGNORE);} else {echo "";}?>;
-	var position_array = <?php if(isset($position_array)) {echo json_encode($position_array, JSON_INVALID_UTF8_IGNORE);} else {echo "";}?>;
-	var max_combination = <?php if(isset($max_combination)) {echo json_encode($max_combination, JSON_INVALID_UTF8_IGNORE);} else {echo "";}?>;
-	var phenotype_file_name = <?php if(isset($phenotype_file_name)) {echo json_encode($phenotype_file_name, JSON_INVALID_UTF8_IGNORE);} else {echo "";}?>;
-	var phenotype_array = <?php if(isset($phenotype_array)) {echo json_encode($phenotype_array, JSON_INVALID_UTF8_IGNORE);} else {echo "";}?>;
+	var dataset = <?php if (isset($dataset)) {
+						echo json_encode($dataset, JSON_INVALID_UTF8_IGNORE);
+					} else {
+						echo "";
+					} ?>;
+	var gene = <?php if (isset($gene)) {
+					echo json_encode($gene, JSON_INVALID_UTF8_IGNORE);
+				} else {
+					echo "";
+				} ?>;
+	var position_array = <?php if (isset($position_array)) {
+								echo json_encode($position_array, JSON_INVALID_UTF8_IGNORE);
+							} else {
+								echo "";
+							} ?>;
+	var max_combination = <?php if (isset($max_combination)) {
+								echo json_encode($max_combination, JSON_INVALID_UTF8_IGNORE);
+							} else {
+								echo "";
+							} ?>;
+	var phenotype_file_name = <?php if (isset($phenotype_file_name)) {
+									echo json_encode($phenotype_file_name, JSON_INVALID_UTF8_IGNORE);
+								} else {
+									echo "";
+								} ?>;
+	var phenotype_array = <?php if (isset($phenotype_array)) {
+								echo json_encode($phenotype_array, JSON_INVALID_UTF8_IGNORE);
+							} else {
+								echo "";
+							} ?>;
 
 	var phenotype_dict = processPhenotypeArray(phenotype_array);
 	document.getElementById('madis_result_' + gene).innerHTML = "Loading...";

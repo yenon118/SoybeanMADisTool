@@ -1,6 +1,10 @@
-<link rel="stylesheet" href="https://code.jquery.com/ui/1.13.1/themes/base/jquery-ui.css"></link>
-<script src="https://code.jquery.com/jquery-3.6.0.min.js" integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4=" crossorigin="anonymous"></script>
-<script src="https://code.jquery.com/ui/1.13.1/jquery-ui.js"></script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<link rel="stylesheet" href="https://code.jquery.com/ui/1.14.1/themes/base/jquery-ui.css">
+</link>
+<script src="https://code.jquery.com/jquery-3.7.1.min.js" integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" crossorigin="anonymous"></script>
+<script src="https://code.jquery.com/ui/1.14.1/jquery-ui.min.js" integrity="sha256-AlTido85uXPlSyyaZNsjJXeCs07eSv3r43kyCVc8ChI=" crossorigin="anonymous"></script>
 
 <?php
 $TITLE = "Soybean MADis Tool";
@@ -37,10 +41,18 @@ $gene = $_GET['gene'];
 $chromosome = $_GET['chromosome'];
 $positions = $_GET['positions'];
 
-$dataset = trim($dataset);
-$gene = trim($gene);
-$chromosome = trim($chromosome);
-$positions = trim($positions);
+
+$dataset = clean_malicious_input($dataset);
+$dataset = preg_replace('/\s+/', '', $dataset);
+
+$gene = clean_malicious_input($gene);
+$gene = preg_replace('/\s+/', '', $gene);
+
+$chromosome = clean_malicious_input($chromosome);
+$chromosome = preg_replace('/\s+/', '', $chromosome);
+
+$positions = clean_malicious_input($positions);
+
 
 if (empty($positions)) {
 	$position_array = array();
@@ -49,16 +61,16 @@ if (empty($positions)) {
 	$temp_position_array = preg_split("/[;, \n]+/", $positions);
 	$position_array = array();
 	for ($i = 0; $i < count($temp_position_array); $i++) {
-		if (!empty(trim($temp_position_array[$i]))) {
-			array_push($position_array, trim($temp_position_array[$i]));
+		if (!empty(preg_replace("/[^0-9.]/", "", $temp_position_array[$i]))) {
+			array_push($position_array, preg_replace("/[^0-9.]/", "", $temp_position_array[$i]));
 		}
 	}
 } elseif (is_array($positions)) {
 	$temp_position_array = $positions;
 	$position_array = array();
 	for ($i = 0; $i < count($temp_position_array); $i++) {
-		if (!empty(trim($temp_position_array[$i]))) {
-			array_push($position_array, trim($temp_position_array[$i]));
+		if (!empty(preg_replace("/[^0-9.]/", "", $temp_position_array[$i]))) {
+			array_push($position_array, preg_replace("/[^0-9.]/", "", $temp_position_array[$i]));
 		}
 	}
 }
@@ -104,7 +116,7 @@ $result = $stmt->fetchAll();
 $result_arr = pdoResultFilter($result);
 
 // Render result to a table
-if(isset($result_arr) && is_array($result_arr) && !empty($result_arr)) {
+if (isset($result_arr) && is_array($result_arr) && !empty($result_arr)) {
 
 	if (!empty($positions)) {
 		echo "<div style='margin-top:10px;margin-bottom:10px;' align='center'>";
@@ -217,7 +229,6 @@ if(isset($result_arr) && is_array($result_arr) && !empty($result_arr)) {
 
 	echo "<br />";
 	echo "<br />";
-
 } else {
 	echo "<p>No Allele Catalog data available for the chromosome and positions!!!</p>";
 }

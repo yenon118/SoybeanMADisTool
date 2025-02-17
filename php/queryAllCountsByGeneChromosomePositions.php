@@ -11,21 +11,32 @@ $gene = $_GET['Gene'];
 $chromosome = $_GET['Chromosome'];
 $positions = $_GET['Positions'];
 
+
+$dataset = clean_malicious_input($dataset);
+$dataset = preg_replace('/\s+/', '', $dataset);
+
+$gene = clean_malicious_input($gene);
+$gene = preg_replace('/\s+/', '', $gene);
+
+$chromosome = clean_malicious_input($chromosome);
+$chromosome = preg_replace('/\s+/', '', $chromosome);
+
+
 if (is_string($positions)) {
 	$positions = trim($positions);
 	$temp_position_array = preg_split("/[;, \n]+/", $positions);
 	$position_array = array();
 	for ($i = 0; $i < count($temp_position_array); $i++) {
-		if (!empty(trim($temp_position_array[$i]))) {
-			array_push($position_array, trim($temp_position_array[$i]));
+		if (!empty(preg_replace("/[^0-9.]/", "", $temp_position_array[$i]))) {
+			array_push($position_array, preg_replace("/[^0-9.]/", "", $temp_position_array[$i]));
 		}
 	}
 } elseif (is_array($positions)) {
 	$temp_position_array = $positions;
 	$position_array = array();
 	for ($i = 0; $i < count($temp_position_array); $i++) {
-		if (!empty(trim($temp_position_array[$i]))) {
-			array_push($position_array, trim($temp_position_array[$i]));
+		if (!empty(preg_replace("/[^0-9.]/", "", $temp_position_array[$i]))) {
+			array_push($position_array, preg_replace("/[^0-9.]/", "", $temp_position_array[$i]));
 		}
 	}
 }

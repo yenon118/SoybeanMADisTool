@@ -1,6 +1,7 @@
 <?php
 
-function getDataByChromosomePositionsQueryString($dataset, $gene, $chromosome, $position_array, $db, $gff_table, $accession_mapping_table, $where = ""){
+function getDataByChromosomePositionsQueryString($dataset, $gene, $chromosome, $position_array, $db, $gff_table, $accession_mapping_table, $where = "")
+{
 
 	// Generate SQL string
 	$query_str = "SELECT ACD.Classification, ACD.Improvement_Status, ";
@@ -27,9 +28,9 @@ function getDataByChromosomePositionsQueryString($dataset, $gene, $chromosome, $
 		if (!empty($position_array)) {
 			$query_str = $query_str . "AND (FUNC.Position IN ('";
 			for ($i = 0; $i < count($position_array); $i++) {
-				if($i < (count($position_array)-1)){
+				if ($i < (count($position_array) - 1)) {
 					$query_str = $query_str . trim($position_array[$i]) . "', '";
-				} elseif ($i == (count($position_array)-1)) {
+				} elseif ($i == (count($position_array) - 1)) {
 					$query_str = $query_str . trim($position_array[$i]);
 				}
 			}

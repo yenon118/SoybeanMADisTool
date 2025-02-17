@@ -1,6 +1,10 @@
-<link rel="stylesheet" href="https://code.jquery.com/ui/1.13.1/themes/base/jquery-ui.css"></link>
-<script src="https://code.jquery.com/jquery-3.6.0.min.js" integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4=" crossorigin="anonymous"></script>
-<script src="https://code.jquery.com/ui/1.13.1/jquery-ui.js"></script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<link rel="stylesheet" href="https://code.jquery.com/ui/1.14.1/themes/base/jquery-ui.css">
+</link>
+<script src="https://code.jquery.com/jquery-3.7.1.min.js" integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" crossorigin="anonymous"></script>
+<script src="https://code.jquery.com/ui/1.14.1/jquery-ui.min.js" integrity="sha256-AlTido85uXPlSyyaZNsjJXeCs07eSv3r43kyCVc8ChI=" crossorigin="anonymous"></script>
 <style>
 	.ui-accordion-header.ui-state-active {
 		background-color: green;
@@ -24,7 +28,7 @@ include '../config.php';
 include './php/pdoResultFilter.php';
 ?>
 
-<link rel="stylesheet" href="css/modal.css" />
+<link rel="stylesheet" href="./css/modal.css" />
 
 <!-- Back button -->
 <a href="/SoybeanMADisTool/"><button> &lt; Back </button></a>
@@ -53,12 +57,27 @@ $file_tmp_name = $_FILES['file_1']['tmp_name'];
 $file_error = $_FILES['file_1']['error'];
 $file_size = $_FILES['file_1']['size'];
 
+
+$dataset = clean_malicious_input($dataset);
+$dataset = preg_replace('/\s+/', '', $dataset);
+
+$gene = clean_malicious_input($gene);
+
+if (isset($max_combination)) {
+	if (!empty($max_combination)) {
+		$max_combination = clean_malicious_input($max_combination);
+	}
+}
+
+
 // Copy the uploaded file to the uploads folder
 $phenotype_file_moved_flag = false;
 if (!empty($file_tmp_name)) {
-	$phenotype_file_name = preg_replace('/.*\//i', '', $file_tmp_name) . '_' . $file_name;
-	$phenotype_file = './uploads/tmp_phenotype_files/' . $phenotype_file_name;
-	$phenotype_file_moved_flag = move_uploaded_file($file_tmp_name, $phenotype_file);
+	if (str_ends_with($file_name, '.txt') || str_ends_with($file_name, '.csv')) {
+		$phenotype_file_name = preg_replace('/.*\//i', '', $file_tmp_name) . '_' . $file_name;
+		$phenotype_file = './uploads/tmp_phenotype_files/' . $phenotype_file_name;
+		$phenotype_file_moved_flag = move_uploaded_file($file_tmp_name, $phenotype_file);
+	}
 }
 
 // Check max_combination value is reasonable
@@ -81,16 +100,16 @@ if (empty($gene)) {
 	$temp_gene_array = preg_split("/[;, \n]+/", $gene);
 	$gene_array = array();
 	for ($i = 0; $i < count($temp_gene_array); $i++) {
-		if (!empty(trim($temp_gene_array[$i]))) {
-			array_push($gene_array, trim($temp_gene_array[$i]));
+		if (!empty(preg_replace('/\s+/', '', $temp_gene_array[$i]))) {
+			array_push($gene_array, preg_replace('/\s+/', '', $temp_gene_array[$i]));
 		}
 	}
 } elseif (is_array($gene)) {
 	$temp_gene_array = $gene;
 	$gene_array = array();
 	for ($i = 0; $i < count($temp_gene_array); $i++) {
-		if (!empty(trim($temp_gene_array[$i]))) {
-			array_push($gene_array, trim($temp_gene_array[$i]));
+		if (!empty(preg_replace('/\s+/', '', $temp_gene_array[$i]))) {
+			array_push($gene_array, preg_replace('/\s+/', '', $temp_gene_array[$i]));
 		}
 	}
 }
@@ -107,16 +126,18 @@ $phenotype_array = array();
 
 if (!empty($phenotype_file)) {
 	if (file_exists($phenotype_file)) {
-		try {
-			$phenotype_reader = fopen($phenotype_file, "r") or die("Unable to open phenotype file!");
-			// Output one line until end-of-file
-			while(!feof($phenotype_reader)) {
-				array_push($phenotype_array, fgets($phenotype_reader));
+		if (str_ends_with($phenotype_file, '.txt') || str_ends_with($phenotype_file, '.csv')) {
+			try {
+				$phenotype_reader = fopen($phenotype_file, "r") or die("Unable to open phenotype file!");
+				// Output one line until end-of-file
+				while (!feof($phenotype_reader)) {
+					array_push($phenotype_array, fgets($phenotype_reader));
+				}
+				fclose($phenotype_reader);
+			} catch (Exception $e) {
+				echo "Unable to open phenotype file!!!";
+				echo 'Caught exception: ',  $e->getMessage(), "\n";
 			}
-			fclose($phenotype_reader);
-		} catch (Exception $e) {
-			echo "Unable to open phenotype file!!!";
-			echo 'Caught exception: ',  $e->getMessage(), "\n";
 		}
 	} else {
 		echo "Phenotype file does not exists!!! <br />";
@@ -157,11 +178,31 @@ if (count($gene_array) > 1) {
 <script type="text/javascript" language="javascript" src="./js/viewMADisResults.js"></script>
 
 <script type="text/javascript" language="javascript">
-	var dataset = <?php if(isset($dataset)) {echo json_encode($dataset, JSON_INVALID_UTF8_IGNORE);} else {echo "";}?>;
-	var gene_array = <?php if(isset($gene_array)) {echo json_encode($gene_array, JSON_INVALID_UTF8_IGNORE);} else {echo "";}?>;
-	var max_combination = <?php if(isset($max_combination)) {echo json_encode($max_combination, JSON_INVALID_UTF8_IGNORE);} else {echo "";}?>;
-	var phenotype_file_name = <?php if(isset($phenotype_file_name)) {echo json_encode($phenotype_file_name, JSON_INVALID_UTF8_IGNORE);} else {echo "";}?>;
-	var phenotype_array = <?php if(isset($phenotype_array)) {echo json_encode($phenotype_array, JSON_INVALID_UTF8_IGNORE);} else {echo "";}?>;
+	var dataset = <?php if (isset($dataset)) {
+						echo json_encode($dataset, JSON_INVALID_UTF8_IGNORE);
+					} else {
+						echo "";
+					} ?>;
+	var gene_array = <?php if (isset($gene_array)) {
+							echo json_encode($gene_array, JSON_INVALID_UTF8_IGNORE);
+						} else {
+							echo "";
+						} ?>;
+	var max_combination = <?php if (isset($max_combination)) {
+								echo json_encode($max_combination, JSON_INVALID_UTF8_IGNORE);
+							} else {
+								echo "";
+							} ?>;
+	var phenotype_file_name = <?php if (isset($phenotype_file_name)) {
+									echo json_encode($phenotype_file_name, JSON_INVALID_UTF8_IGNORE);
+								} else {
+									echo "";
+								} ?>;
+	var phenotype_array = <?php if (isset($phenotype_array)) {
+								echo json_encode($phenotype_array, JSON_INVALID_UTF8_IGNORE);
+							} else {
+								echo "";
+							} ?>;
 
 	var phenotype_dict = processPhenotypeArray(phenotype_array);
 	updateAllMADisResults(dataset, gene_array, phenotype_dict, max_combination);
