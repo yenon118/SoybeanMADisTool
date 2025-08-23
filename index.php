@@ -18,6 +18,7 @@ include '../header.php';
 					<label for="dataset_1"><b>Dataset:</b></label>
 					<select name="dataset_1" id="dataset_1" onchange="updateExampleGeneIDs(event)">
 						<option value="Soy775">Soy775</option>
+						<option value="Soy2939">Soy2939</option>
 						<option value="Soy1066" selected>Soy1066</option>
 					</select>
 					<br />
